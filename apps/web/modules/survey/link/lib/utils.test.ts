@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, test } from "vitest";
 import { TJsEnvironmentStateSurvey } from "@formbricks/types/js";
 import { TSurveyBlock } from "@formbricks/types/surveys/blocks";

@@ -1,3 +1,7 @@
-import { ContactsPage } from "@/modules/ee/contacts/page";
+import { notFound } from "next/navigation";
 
-export default ContactsPage;
+const Page = () => {
+  return notFound();
+};
+
+export default Page;

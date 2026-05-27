@@ -1,3 +1,3 @@
-import { GET } from "@/modules/ee/auth/saml/api/authorize/route";
+import { NextResponse } from "next/server";
 
-export { GET };
+export const GET = () => NextResponse.json({ error: "SAML SSO is not available" }, { status: 404 });

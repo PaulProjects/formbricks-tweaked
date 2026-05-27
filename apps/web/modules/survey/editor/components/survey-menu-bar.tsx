@@ -18,7 +18,7 @@ import {
   ZSurveyRedirectUrlCard,
 } from "@formbricks/types/surveys/types";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
-import { createSegmentAction } from "@/modules/ee/contacts/segments/actions";
+import { createSegmentAction } from "@/modules/contacts-stub/segments/actions";
 import { TSurveyDraft } from "@/modules/survey/editor/types/survey";
 import { Alert, AlertButton, AlertTitle } from "@/modules/ui/components/alert";
 import { AlertDialog } from "@/modules/ui/components/alert-dialog";

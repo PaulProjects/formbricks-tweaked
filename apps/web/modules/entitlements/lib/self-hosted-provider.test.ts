@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { ResourceNotFoundError } from "@formbricks/types/errors";
 import { getOrganization } from "@/lib/organization/service";
-import { getEnterpriseLicense } from "@/modules/ee/license-check/lib/license";
+import { getEnterpriseLicense } from "@/modules/license-stub/lib/license";
 import { getSelfHostedOrganizationEntitlementsContext } from "./self-hosted-provider";
 
 vi.mock("server-only", () => ({}));
@@ -10,7 +10,7 @@ vi.mock("@/lib/organization/service", () => ({
   getOrganization: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/license-check/lib/license", () => ({
+vi.mock("@/modules/license-stub/lib/license", () => ({
   getEnterpriseLicense: vi.fn(),
 }));
 
@@ -24,14 +24,14 @@ beforeEach(() => {
 describe("getSelfHostedOrganizationEntitlementsContext", () => {
   test("throws ResourceNotFoundError when organization is null", async () => {
     mockGetOrg.mockResolvedValue(null);
-    mockGetLicense.mockResolvedValue({ status: "no-license", features: null, active: false });
+    mockGetLicense.mockResolvedValue({ status: "no-license", features: null, active: false } as any);
 
     await expect(getSelfHostedOrganizationEntitlementsContext("org1")).rejects.toThrow(ResourceNotFoundError);
   });
 
   test("returns context with no license features", async () => {
     mockGetOrg.mockResolvedValue({ id: "org1" } as any);
-    mockGetLicense.mockResolvedValue({ status: "no-license", features: null, active: false });
+    mockGetLicense.mockResolvedValue({ status: "no-license", features: null, active: false } as any);
 
     const result = await getSelfHostedOrganizationEntitlementsContext("org1");
 

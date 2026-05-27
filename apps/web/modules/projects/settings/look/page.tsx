@@ -4,15 +4,15 @@ import { cn } from "@/lib/cn";
 import { IS_STORAGE_CONFIGURED, SURVEY_BG_COLORS, UNSPLASH_ACCESS_KEY } from "@/lib/constants";
 import { getPublicDomain } from "@/lib/getPublicUrl";
 import { getTranslate } from "@/lingodotdev/server";
-import { getRemoveBrandingPermission } from "@/modules/ee/license-check/lib/utils";
-import { BrandingSettingsCard } from "@/modules/ee/whitelabel/remove-branding/components/branding-settings-card";
 import { getEnvironmentAuth } from "@/modules/environments/lib/utils";
+import { getRemoveBrandingPermission } from "@/modules/license-stub/lib/utils";
 import { ProjectConfigNavigation } from "@/modules/projects/settings/components/project-config-navigation";
 import { EditLogo } from "@/modules/projects/settings/look/components/edit-logo";
 import { getProjectByEnvironmentId } from "@/modules/projects/settings/look/lib/project";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { PageContentWrapper } from "@/modules/ui/components/page-content-wrapper";
 import { PageHeader } from "@/modules/ui/components/page-header";
+import { BrandingSettingsCard } from "@/modules/whitelabel/remove-branding/components/branding-settings-card";
 import { EditPlacementForm } from "./components/edit-placement-form";
 import { ThemeStyling } from "./components/theme-styling";
 

@@ -11,8 +11,8 @@ import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { AuthenticatedActionClientCtx } from "@/lib/utils/action-client/types/context";
 import { getTranslate } from "@/lingodotdev/server";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import { getIsMultiOrgEnabled } from "@/modules/ee/license-check/lib/utils";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
 import { ZOrganizationAISettingsInput, ZUpdateOrganizationAISettingsAction } from "./schemas";
 
 async function updateOrganizationAction<T extends z.ZodRawShape>({

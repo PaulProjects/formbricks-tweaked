@@ -19,8 +19,8 @@ import { previewSurvey } from "@/app/lib/templates";
 import { FORMBRICKS_SURVEYS_FILTERS_KEY_LS } from "@/lib/localStorage";
 import { buildStylingFromBrandColor } from "@/lib/styling/constants";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
-import { TOrganizationTeam } from "@/modules/ee/teams/project-teams/types/team";
-import { CreateTeamModal } from "@/modules/ee/teams/team-list/components/create-team-modal";
+import { CreateTeamModal } from "@/modules/teams-stub/components/create-team-modal";
+import { TOrganizationTeam } from "@/modules/teams-stub/types/team";
 import { Button } from "@/modules/ui/components/button";
 import { ColorPicker } from "@/modules/ui/components/color-picker";
 import {

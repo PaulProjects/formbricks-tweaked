@@ -10,7 +10,6 @@ import { TUserLocale } from "@formbricks/types/user";
 import { extractLanguageCodes, getEnabledLanguages } from "@/lib/i18n/utils";
 import { structuredClone } from "@/lib/pollyfills/structuredClone";
 import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
-import { TTeamPermission } from "@/modules/ee/teams/project-teams/types/team";
 import { EditPublicSurveyAlertDialog } from "@/modules/survey/components/edit-public-survey-alert-dialog";
 import { ElementsView } from "@/modules/survey/editor/components/elements-view";
 import { LoadingSkeleton } from "@/modules/survey/editor/components/loading-skeleton";
@@ -20,6 +19,7 @@ import { SurveyEditorTabs } from "@/modules/survey/editor/components/survey-edit
 import { SurveyMenuBar } from "@/modules/survey/editor/components/survey-menu-bar";
 import { TFollowUpEmailToUser } from "@/modules/survey/editor/types/survey-follow-up";
 import { FollowUpsView } from "@/modules/survey/follow-ups/components/follow-ups-view";
+import { TTeamPermission } from "@/modules/teams-stub/types/team";
 import { PreviewSurvey } from "@/modules/ui/components/preview-survey";
 import { refetchProjectAction } from "../actions";
 

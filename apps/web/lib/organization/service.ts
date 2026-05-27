@@ -18,7 +18,7 @@ import { IS_FORMBRICKS_CLOUD, ITEMS_PER_PAGE } from "@/lib/constants";
 import { getProjects } from "@/lib/project/service";
 import { updateUser } from "@/lib/user/service";
 import { getBillingUsageCycleWindow } from "@/lib/utils/billing";
-import { cleanupStripeCustomer } from "@/modules/ee/billing/lib/organization-billing";
+import { cleanupStripeCustomer } from "@/modules/billing-stub/lib/organization-billing";
 import { validateInputs } from "../utils/validate";
 
 export const select = {

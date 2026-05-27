@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TOrganizationRole } from "@formbricks/types/memberships";
-import { TOrganizationTeam } from "@/modules/ee/teams/team-list/types/team";
 import { TInvitee } from "@/modules/organization/settings/teams/types/invites";
+import { TOrganizationTeam } from "@/modules/teams-stub/types/team";
 import {
   Dialog,
   DialogBody,

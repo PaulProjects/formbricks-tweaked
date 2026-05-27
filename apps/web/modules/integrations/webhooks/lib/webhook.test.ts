@@ -35,7 +35,7 @@ vi.mock("@/lib/utils/validate-webhook-url", () => ({
 }));
 
 vi.mock("@/lingodotdev/server", () => ({
-  getTranslate: vi.fn(async () => (key: string) => key),
+  getTranslate: vi.fn(async () => ((key: string) => key) as any),
 }));
 
 vi.mock("@/modules/integrations/webhooks/lib/utils", () => ({
@@ -52,7 +52,7 @@ describe("testEndpoint", () => {
     constantsMock.dangerouslyAllow = false;
     vi.mocked(generateStandardWebhookSignature).mockReturnValue("signed-payload");
     vi.mocked(validateWebhookUrl).mockResolvedValue(undefined);
-    vi.mocked(getTranslate).mockResolvedValue((key: string) => key);
+    vi.mocked(getTranslate).mockResolvedValue(((key: string) => key) as any);
     vi.mocked(isDiscordWebhook).mockReturnValue(false);
   });
 

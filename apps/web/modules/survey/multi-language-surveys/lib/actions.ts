@@ -17,7 +17,7 @@ import {
   getOrganizationIdFromProjectId,
   getProjectIdFromLanguageId,
 } from "@/lib/utils/helper";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 
 const ZCreateLanguageAction = z.object({
   projectId: ZId,

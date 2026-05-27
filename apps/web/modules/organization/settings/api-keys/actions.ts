@@ -5,7 +5,7 @@ import { ZId } from "@formbricks/types/common";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { getOrganizationIdFromApiKeyId } from "@/lib/utils/helper";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import {
   createApiKey,
   deleteApiKey,

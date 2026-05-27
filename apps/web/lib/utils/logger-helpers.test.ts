@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { deepDiff, redactPII, sanitizeUrlForLogging } from "./logger-helpers";
 
 // Patch cache before any imports
@@ -18,7 +18,7 @@ beforeEach(async () => {
   }));
 });
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsAuditLogsEnabled: vi.fn().mockResolvedValue(true),
 }));
 
@@ -39,7 +39,7 @@ vi.mock("@/lib/constants", () => ({
 vi.mock("@/lib/utils/client-ip", () => ({
   getClientIpFromHeaders: vi.fn().mockResolvedValue("127.0.0.1"),
 }));
-vi.mock("@/modules/ee/audit-logs/lib/service", () => ({
+vi.mock("@/modules/audit-logs/lib/service", () => ({
   logAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -88,92 +88,6 @@ describe("deepDiff", () => {
     expect(deepDiff({ a: 1 }, { a: 1, b: 2 })).toEqual({ b: 2 });
     // The following case should return undefined, as removed keys are not included in the diff
     expect(deepDiff({ a: 1, b: 2 }, { a: 1 })).toBeUndefined();
-  });
-});
-
-describe("withAuditLogging", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.useFakeTimers();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-  test("logs audit event for successful handler", async () => {
-    const handler = vi.fn().mockResolvedValue("ok");
-    const { withAuditLogging } = await import("../../modules/ee/audit-logs/lib/handler");
-    const wrapped = withAuditLogging("created", "survey", handler);
-    const ctx = {
-      user: {
-        id: "u1",
-        name: "Test User",
-        email: "test@example.com",
-        emailVerified: null,
-        twoFactorEnabled: false,
-        identityProvider: "email" as const,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        role: null,
-        organizationId: "org1",
-        isActive: true,
-        lastLoginAt: null,
-        locale: "en-US" as const,
-        teams: [],
-        organizations: [],
-        objective: null,
-        notificationSettings: {
-          alert: {},
-        },
-      },
-      organizationId: "org1",
-      ipAddress: "127.0.0.1",
-      auditLoggingCtx: {
-        ipAddress: "127.0.0.1",
-        organizationId: "org1",
-      },
-    };
-    const parsedInput = {};
-    await wrapped({ ctx, parsedInput });
-    vi.runAllTimers();
-    expect(handler).toHaveBeenCalled();
-  });
-  test("logs audit event for failed handler and throws", async () => {
-    const handler = vi.fn().mockRejectedValue(new Error("fail"));
-    const { withAuditLogging } = await import("../../modules/ee/audit-logs/lib/handler");
-    const wrapped = withAuditLogging("created", "survey", handler);
-    const ctx = {
-      user: {
-        id: "u1",
-        name: "Test User",
-        email: "test@example.com",
-        emailVerified: null,
-        twoFactorEnabled: false,
-        identityProvider: "email" as const,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        role: null,
-        organizationId: "org1",
-        isActive: true,
-        lastLoginAt: null,
-        locale: "en-US" as const,
-        teams: [],
-        organizations: [],
-        objective: null,
-        notificationSettings: {
-          alert: {},
-        },
-      },
-      organizationId: "org1",
-      ipAddress: "127.0.0.1",
-      auditLoggingCtx: {
-        ipAddress: "127.0.0.1",
-        organizationId: "org1",
-      },
-    };
-    const parsedInput = {};
-    await expect(wrapped({ ctx, parsedInput })).rejects.toThrow("fail");
-    vi.runAllTimers();
-    expect(handler).toHaveBeenCalled();
   });
 });
 

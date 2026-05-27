@@ -6,10 +6,10 @@ import { ZUserEmail } from "@formbricks/types/user";
 import { WEBAPP_URL } from "@/lib/constants";
 import { actionClient } from "@/lib/utils/action-client";
 import { getValidatedCallbackUrl } from "@/lib/utils/url";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { getUserByEmail } from "@/modules/auth/lib/user";
 import { applyIPRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
 import { sendVerificationEmail } from "@/modules/email";
 
 const ZResendVerificationEmailAction = z.object({

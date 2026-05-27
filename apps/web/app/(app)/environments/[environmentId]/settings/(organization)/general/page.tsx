@@ -1,11 +1,9 @@
 import { OrganizationSettingsNavbar } from "@/app/(app)/environments/[environmentId]/settings/(organization)/components/OrganizationSettingsNavbar";
 import { isInstanceAIConfigured } from "@/lib/ai/service";
-import { FB_LOGO_URL, IS_FORMBRICKS_CLOUD, IS_STORAGE_CONFIGURED } from "@/lib/constants";
-import { getUser } from "@/lib/user/service";
+import { IS_FORMBRICKS_CLOUD, IS_STORAGE_CONFIGURED } from "@/lib/constants";
 import { getTranslate } from "@/lingodotdev/server";
-import { getIsMultiOrgEnabled, getWhiteLabelPermission } from "@/modules/ee/license-check/lib/utils";
-import { EmailCustomizationSettings } from "@/modules/ee/whitelabel/email-customization/components/email-customization-settings";
 import { getEnvironmentAuth } from "@/modules/environments/lib/utils";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { IdBadge } from "@/modules/ui/components/id-badge";
 import { PageContentWrapper } from "@/modules/ui/components/page-content-wrapper";
@@ -21,19 +19,12 @@ const Page = async (props: { params: Promise<{ environmentId: string }> }) => {
   const params = await props.params;
   const t = await getTranslate();
 
-  const { session, currentUserMembership, organization, isOwner, isManager } = await getEnvironmentAuth(
-    params.environmentId
-  );
-
-  const user = session?.user?.id ? await getUser(session.user.id) : null;
+  const { currentUserMembership, organization, isOwner } = await getEnvironmentAuth(params.environmentId);
 
   const isMultiOrgEnabled = await getIsMultiOrgEnabled();
-  const hasWhiteLabelPermission = await getWhiteLabelPermission(organization.id);
 
   const isDeleteDisabled = !isOwner || !isMultiOrgEnabled;
   const currentUserRole = currentUserMembership?.role;
-
-  const isOwnerOrManager = isManager || isOwner;
 
   return (
     <PageContentWrapper>
@@ -71,16 +62,7 @@ const Page = async (props: { params: Promise<{ environmentId: string }> }) => {
           isInstanceAIConfigured={isInstanceAIConfigured()}
         />
       </SettingsCard>
-      <EmailCustomizationSettings
-        organization={organization}
-        hasWhiteLabelPermission={hasWhiteLabelPermission}
-        environmentId={params.environmentId}
-        isReadOnly={!isOwnerOrManager}
-        isFormbricksCloud={IS_FORMBRICKS_CLOUD}
-        fbLogoUrl={FB_LOGO_URL}
-        user={user}
-        isStorageConfigured={IS_STORAGE_CONFIGURED}
-      />
+
       {isMultiOrgEnabled && (
         <SettingsCard
           title={t("environments.settings.general.delete_organization")}

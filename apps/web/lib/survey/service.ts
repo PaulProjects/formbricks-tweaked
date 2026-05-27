@@ -49,6 +49,7 @@ export const selectSurvey = {
   isSingleResponsePerEmailEnabled: true,
   isBackButtonHidden: true,
   isCaptureIpEnabled: true,
+  isAutoProgressingEnabled: true,
   redirectUrl: true,
   projectOverwrites: true,
   styling: true,
@@ -602,13 +603,20 @@ export const createSurvey = async (
   );
 
   try {
-    const { createdBy, languages, ...restSurveyBody } = parsedSurveyBody;
+    const { createdBy, languages, segment, followUps, ...restSurveyBody } = parsedSurveyBody;
     const actionClasses = await getActionClasses(parsedEnvironmentId);
 
     let data: Omit<Prisma.SurveyCreateInput, "environment"> = {
       ...restSurveyBody,
-      // @ts-expect-error - languages would be undefined in case of empty array
-      languages: languages?.length ? languages : undefined,
+      languages: languages?.length
+        ? {
+            create: languages.map((l) => ({
+              languageId: l.language.id,
+              default: l.default,
+              enabled: l.enabled,
+            })),
+          }
+        : undefined,
       triggers: restSurveyBody.triggers
         ? // @ts-expect-error - triggers' createdAt and updatedAt are actually dates
           handleTriggerUpdates(restSurveyBody.triggers, [], actionClasses)
@@ -624,15 +632,23 @@ export const createSurvey = async (
       };
     }
 
+    if (segment) {
+      data.segment = {
+        connect: {
+          id: segment.id,
+        },
+      };
+    }
+
     const organization = await getOrganizationByEnvironmentId(parsedEnvironmentId);
     if (!organization) {
       throw new ResourceNotFoundError("Organization", null);
     }
 
     // Survey follow-ups
-    if (restSurveyBody.followUps?.length) {
+    if (followUps?.length) {
       data.followUps = {
-        create: restSurveyBody.followUps.map((followUp) => ({
+        create: followUps.map((followUp: any) => ({
           name: followUp.name,
           trigger: followUp.trigger,
           action: followUp.action,

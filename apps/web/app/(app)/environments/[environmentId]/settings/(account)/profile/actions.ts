@@ -12,11 +12,11 @@ import { verifyUserPassword } from "@/lib/user/password";
 import { getUser, updateUser } from "@/lib/user/service";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { AuthenticatedActionClientCtx } from "@/lib/utils/action-client/types/context";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { requestPasswordReset } from "@/modules/auth/forgot-password/lib/password-reset-service";
 import { updateBrevoCustomer } from "@/modules/auth/lib/brevo";
 import { applyRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
 import { sendVerificationNewEmail } from "@/modules/email";
 
 function buildUserUpdatePayload(parsedInput: TUserPersonalInfoUpdateInput): TUserUpdateInput {

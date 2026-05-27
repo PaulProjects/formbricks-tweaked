@@ -14,11 +14,8 @@ import { getOrganizationProjectsCount } from "@/lib/project/service";
 import { updateUser } from "@/lib/user/service";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import {
-  getAccessControlPermission,
-  getOrganizationProjectsLimit,
-} from "@/modules/ee/license-check/lib/utils";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
+import { getAccessControlPermission, getOrganizationProjectsLimit } from "@/modules/license-stub/lib/utils";
 import { createProject } from "@/modules/projects/settings/lib/project";
 import { getOrganizationsByUserId } from "./lib/organization";
 import { getProjectsByUserId } from "./lib/project";

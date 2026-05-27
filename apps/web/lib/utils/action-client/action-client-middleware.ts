@@ -3,9 +3,9 @@ import { ZodIssue, z } from "zod";
 import { AuthorizationError } from "@formbricks/types/errors";
 import { type TOrganizationRole } from "@formbricks/types/memberships";
 import { getMembershipRole } from "@/lib/membership/hooks/actions";
-import { getProjectPermissionByUserId, getTeamRoleByTeamIdUserId } from "@/modules/ee/teams/lib/roles";
-import { type TTeamPermission } from "@/modules/ee/teams/project-teams/types/team";
-import { type TTeamRole } from "@/modules/ee/teams/team-list/types/team";
+import { getProjectPermissionByUserId, getTeamRoleByTeamIdUserId } from "@/modules/teams-stub/lib/roles";
+import { type TTeamPermission } from "@/modules/teams-stub/types/team";
+import { type TTeamRole } from "@/modules/teams-stub/types/team";
 
 export const formatErrors = (issues: ZodIssue[]): Record<string, { _errors: string[] }> => {
   return {

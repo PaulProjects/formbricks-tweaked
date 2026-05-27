@@ -14,7 +14,7 @@ import { getFormattedErrorMessage } from "@/lib/utils/helper";
 import { buildVerificationRequestedPath } from "@/modules/auth/lib/verification-links";
 import { createUserAction } from "@/modules/auth/signup/actions";
 import { TermsPrivacyLinks } from "@/modules/auth/signup/components/terms-privacy-links";
-import { SSOOptions } from "@/modules/ee/sso/components/sso-options";
+import { SSOOptions } from "@/modules/sso-stub/components/sso-options";
 import { Button } from "@/modules/ui/components/button";
 import { Checkbox } from "@/modules/ui/components/checkbox";
 import { FormControl, FormError, FormField, FormItem } from "@/modules/ui/components/form";

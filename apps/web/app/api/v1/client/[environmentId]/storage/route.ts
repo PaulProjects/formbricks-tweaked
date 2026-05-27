@@ -7,7 +7,7 @@ import { MAX_FILE_UPLOAD_SIZES } from "@/lib/constants";
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { getSurvey } from "@/lib/survey/service";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
-import { getBiggerUploadFileSizePermission } from "@/modules/ee/license-check/lib/utils";
+import { getBiggerUploadFileSizePermission } from "@/modules/license-stub/lib/utils";
 import { getSignedUrlForUpload } from "@/modules/storage/service";
 import { getErrorResponseFromStorageError } from "@/modules/storage/utils";
 

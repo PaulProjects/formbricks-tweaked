@@ -7,7 +7,7 @@ import { getOrganization } from "@/lib/organization/service";
 import { getOrganizationProjectsCount } from "@/lib/project/service";
 import { getTranslate } from "@/lingodotdev/server";
 import { authOptions } from "@/modules/auth/lib/authOptions";
-import { getOrganizationProjectsLimit } from "@/modules/ee/license-check/lib/utils";
+import { getOrganizationProjectsLimit } from "@/modules/license-stub/lib/utils";
 
 const OnboardingLayout = async (props: {
   params: Promise<{ organizationId: string }>;

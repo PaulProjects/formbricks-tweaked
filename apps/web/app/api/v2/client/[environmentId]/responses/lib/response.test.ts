@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { prisma } from "@formbricks/database";
 import { TContactAttributes } from "@formbricks/types/contact-attribute";
-import { DatabaseError, ResourceNotFoundError } from "@formbricks/types/errors";
+import { DatabaseError, ResourceNotFoundError, UniqueConstraintError } from "@formbricks/types/errors";
 import { TResponseWithQuotaFull, TSurveyQuota } from "@formbricks/types/quota";
 import { TResponse } from "@formbricks/types/responses";
 import { TTag } from "@formbricks/types/tags";
@@ -10,7 +10,7 @@ import { TResponseInputV2 } from "@/app/api/v2/client/[environmentId]/responses/
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { calculateTtcTotal } from "@/lib/response/utils";
 import { validateInputs } from "@/lib/utils/validate";
-import { evaluateResponseQuotas } from "@/modules/ee/quotas/lib/evaluation-service";
+import { evaluateResponseQuotas } from "@/modules/quotas-stub/lib/evaluation-service";
 import { getContact } from "./contact";
 import { createResponse, createResponseWithQuotaEvaluation } from "./response";
 
@@ -46,7 +46,7 @@ vi.mock("@/lib/constants", () => ({
 vi.mock("@/lib/organization/service");
 vi.mock("@/lib/response/utils");
 vi.mock("@/lib/utils/validate");
-vi.mock("@/modules/ee/quotas/lib/evaluation-service");
+vi.mock("@/modules/quotas-stub/lib/evaluation-service");
 vi.mock("@formbricks/database", () => ({
   prisma: {
     response: {
@@ -175,9 +175,33 @@ describe("createResponse V2", () => {
     ).rejects.toThrow(ResourceNotFoundError);
   });
 
-  test("should throw DatabaseError on Prisma known request error", async () => {
-    const prismaError = new Prisma.PrismaClientKnownRequestError("Test Prisma Error", {
+  test("should throw UniqueConstraintError on P2002 with singleUseId target", async () => {
+    const prismaError = new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
       code: "P2002",
+      clientVersion: "test",
+      meta: { target: ["surveyId", "singleUseId"] },
+    });
+    vi.mocked(mockTx.response.create).mockRejectedValue(prismaError);
+    await expect(
+      createResponse(mockResponseInput, mockTx as unknown as Prisma.TransactionClient)
+    ).rejects.toThrow(UniqueConstraintError);
+  });
+
+  test("should throw DatabaseError on P2002 without singleUseId target", async () => {
+    const prismaError = new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+      code: "P2002",
+      clientVersion: "test",
+      meta: { target: ["displayId"] },
+    });
+    vi.mocked(mockTx.response.create).mockRejectedValue(prismaError);
+    await expect(
+      createResponse(mockResponseInput, mockTx as unknown as Prisma.TransactionClient)
+    ).rejects.toThrow(DatabaseError);
+  });
+
+  test("should throw DatabaseError on non-P2002 Prisma known request error", async () => {
+    const prismaError = new Prisma.PrismaClientKnownRequestError("Test Prisma Error", {
+      code: "P2025",
       clientVersion: "test",
     });
     vi.mocked(mockTx.response.create).mockRejectedValue(prismaError);

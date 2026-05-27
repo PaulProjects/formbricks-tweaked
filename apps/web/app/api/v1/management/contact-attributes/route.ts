@@ -1,3 +1,9 @@
-import { GET } from "@/modules/ee/contacts/api/v1/management/contact-attributes/route";
+import { NextResponse } from "next/server";
 
-export { GET };
+const notAvailable = () => NextResponse.json({ error: "Contacts API is not available" }, { status: 404 });
+
+export const GET = notAvailable;
+export const POST = notAvailable;
+export const PUT = notAvailable;
+export const DELETE = notAvailable;
+export const OPTIONS = notAvailable;

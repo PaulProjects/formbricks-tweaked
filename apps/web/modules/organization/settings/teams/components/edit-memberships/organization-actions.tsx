@@ -10,10 +10,10 @@ import { TOrganization } from "@formbricks/types/organizations";
 import { FORMBRICKS_ENVIRONMENT_ID_LS } from "@/lib/localStorage";
 import { getAccessFlags } from "@/lib/membership/utils";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
-import { TOrganizationTeam } from "@/modules/ee/teams/team-list/types/team";
 import { inviteUserAction, leaveOrganizationAction } from "@/modules/organization/settings/teams/actions";
 import { InviteMemberModal } from "@/modules/organization/settings/teams/components/invite-member/invite-member-modal";
 import { TInvitee } from "@/modules/organization/settings/teams/types/invites";
+import { TOrganizationTeam } from "@/modules/teams-stub/types/team";
 import { Button } from "@/modules/ui/components/button";
 import {
   Dialog,

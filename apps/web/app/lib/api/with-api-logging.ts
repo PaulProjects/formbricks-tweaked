@@ -12,12 +12,12 @@ import {
   isManagementApiRoute,
 } from "@/app/middleware/endpoint-validator";
 import { AUDIT_LOG_ENABLED } from "@/lib/constants";
+import { queueAuditEvent } from "@/modules/audit-logs/lib/handler";
+import { TAuditAction, TAuditTarget, UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 import { authOptions } from "@/modules/auth/lib/authOptions";
 import { applyIPRateLimit, applyRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
 import { TRateLimitConfig } from "@/modules/core/rate-limit/types/rate-limit";
-import { queueAuditEvent } from "@/modules/ee/audit-logs/lib/handler";
-import { TAuditAction, TAuditTarget, UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
 
 export type TApiAuditLog = Parameters<typeof queueAuditEvent>[0];
 export type TApiV1Authentication = TAuthenticationApiKey | Session | null;

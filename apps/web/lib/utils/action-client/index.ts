@@ -7,8 +7,8 @@ import { AuthenticationError, AuthorizationError, isExpectedError } from "@formb
 import { AUDIT_LOG_ENABLED, AUDIT_LOG_GET_USER_IP } from "@/lib/constants";
 import { getUser } from "@/lib/user/service";
 import { getClientIpFromHeaders } from "@/lib/utils/client-ip";
+import { UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 import { authOptions } from "@/modules/auth/lib/authOptions";
-import { UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
 import { ActionClientCtx } from "./types/context";
 
 export const actionClient = createSafeActionClient({

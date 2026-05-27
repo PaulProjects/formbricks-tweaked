@@ -12,7 +12,7 @@ import {
   getProjectIdFromEnvironmentId,
   getProjectIdFromTagId,
 } from "@/lib/utils/helper";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { deleteTag, mergeTags, updateTagName } from "@/modules/projects/settings/lib/tag";
 
 const ZDeleteTagAction = z.object({

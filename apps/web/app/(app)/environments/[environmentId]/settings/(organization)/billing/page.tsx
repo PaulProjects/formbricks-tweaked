@@ -1,3 +1,7 @@
-import { PricingPage } from "@/modules/ee/billing/page";
+import { notFound } from "next/navigation";
 
-export default PricingPage;
+const Page = () => {
+  return notFound();
+};
+
+export default Page;

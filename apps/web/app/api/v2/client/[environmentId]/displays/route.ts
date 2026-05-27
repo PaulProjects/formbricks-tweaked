@@ -7,7 +7,7 @@ import { reportApiError } from "@/app/lib/api/api-error-reporter";
 import { parseAndValidateJsonBody } from "@/app/lib/api/parse-and-validate-json-body";
 import { responses } from "@/app/lib/api/response";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
-import { getIsContactsEnabled } from "@/modules/ee/license-check/lib/utils";
+import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
 import { createDisplay } from "./lib/display";
 
 interface Context {

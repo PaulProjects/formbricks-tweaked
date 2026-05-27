@@ -5,8 +5,8 @@ import { OperationNotAllowedError } from "@formbricks/types/errors";
 import { ZUserPassword } from "@formbricks/types/user";
 import { PASSWORD_RESET_DISABLED } from "@/lib/constants";
 import { actionClient } from "@/lib/utils/action-client";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { completePasswordReset } from "@/modules/auth/forgot-password/lib/password-reset-service";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
 
 const ZResetPasswordAction = z.object({
   token: z.string().min(1),

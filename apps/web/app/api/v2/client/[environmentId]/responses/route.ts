@@ -1,6 +1,6 @@
 import { UAParser } from "ua-parser-js";
 import { ZEnvironmentId } from "@formbricks/types/environment";
-import { InvalidInputError } from "@formbricks/types/errors";
+import { InvalidInputError, UniqueConstraintError } from "@formbricks/types/errors";
 import { TResponseWithQuotaFull } from "@formbricks/types/quota";
 import { checkSurveyValidity } from "@/app/api/v2/client/[environmentId]/responses/lib/utils";
 import { reportApiError } from "@/app/lib/api/api-error-reporter";
@@ -14,8 +14,8 @@ import { getClientIpFromHeaders } from "@/lib/utils/client-ip";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/api/lib/validation";
 import { validateOtherOptionLengthForMultipleChoice } from "@/modules/api/v2/lib/element";
-import { getIsContactsEnabled } from "@/modules/ee/license-check/lib/utils";
-import { createQuotaFullObject } from "@/modules/ee/quotas/lib/helpers";
+import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
+import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
 import { createResponseWithQuotaEvaluation } from "./lib/response";
 import { TResponseInputV2, ZResponseInputV2 } from "./types/response";
 
@@ -175,6 +175,10 @@ const createResponseForRequest = async ({
   } catch (error) {
     if (error instanceof InvalidInputError) {
       return responses.badRequestResponse(error.message, undefined, true);
+    }
+
+    if (error instanceof UniqueConstraintError) {
+      return responses.conflictResponse(error.message, undefined, true);
     }
 
     const response = getUnexpectedPublicErrorResponse();

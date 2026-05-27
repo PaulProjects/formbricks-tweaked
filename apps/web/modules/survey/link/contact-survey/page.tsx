@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findMatchingLocale } from "@/lib/utils/locale";
 import { getTranslate } from "@/lingodotdev/server";
-import { verifyContactSurveyToken } from "@/modules/ee/contacts/lib/contact-survey-link";
+import { verifyContactSurveyToken } from "@/modules/contacts-stub/lib/contact-survey-link";
 import { getResponseCountBySurveyId } from "@/modules/survey/lib/response";
 import { getSurvey } from "@/modules/survey/lib/survey";
 import { SurveyInactive } from "@/modules/survey/link/components/survey-inactive";
@@ -93,7 +93,7 @@ export const ContactSurveyPage = async (props: ContactSurveyPageProps) => {
   if (!result.ok) {
     if (
       result.error.type === "bad_request" &&
-      result.error.details?.some((detail) => detail.issue === "token_expired")
+      result.error.details?.some((detail: any) => detail.issue === "token_expired")
     ) {
       return <SurveyInactive surveyClosedMessage={{ heading: t("c.link_expired") }} status="link expired" />;
     }

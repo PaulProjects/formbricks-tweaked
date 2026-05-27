@@ -11,7 +11,7 @@ vi.mock("./lib/display", () => ({
   createDisplay: mocks.createDisplay,
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsContactsEnabled: mocks.getIsContactsEnabled,
 }));
 

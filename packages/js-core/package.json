@@ -44,6 +44,7 @@
   "author": "Formbricks <hola@formbricks.com>",
   "devDependencies": {
     "@formbricks/config-typescript": "workspace:*",
+    "@formbricks/database": "workspace:*",
     "@formbricks/eslint-config": "workspace:*",
     "@vitest/coverage-v8": "4.0.18",
     "terser": "5.46.0",

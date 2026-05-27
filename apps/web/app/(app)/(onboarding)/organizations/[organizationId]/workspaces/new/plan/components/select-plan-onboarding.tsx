@@ -1,5 +1,5 @@
 import { getTranslate } from "@/lingodotdev/server";
-import { SelectPlanCard } from "@/modules/ee/billing/components/select-plan-card";
+import { SelectPlanCard } from "@/modules/billing-stub/components/select-plan-card";
 import { Header } from "@/modules/ui/components/header";
 
 interface SelectPlanOnboardingProps {

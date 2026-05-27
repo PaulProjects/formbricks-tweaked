@@ -45,7 +45,7 @@ vi.mock("@/modules/api/lib/validation", () => ({
   validateResponseData: mocks.validateResponseData,
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsContactsEnabled: mocks.getIsContactsEnabled,
 }));
 

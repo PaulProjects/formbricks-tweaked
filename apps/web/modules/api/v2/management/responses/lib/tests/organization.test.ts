@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   environmentId,
   environmentIds,

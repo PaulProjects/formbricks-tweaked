@@ -20,7 +20,7 @@ import { CustomFilter } from "@/app/(app)/environments/[environmentId]/surveys/[
 import { getFormattedFilters } from "@/app/lib/surveys/surveys";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
 import { replaceHeadlineRecall } from "@/lib/utils/recall";
-import { QuotasSummary } from "@/modules/ee/quotas/components/quotas-summary";
+import { QuotasSummary } from "@/modules/quotas-stub/components/quotas-summary";
 import { SummaryList } from "./SummaryList";
 import { SummaryMetadata } from "./SummaryMetadata";
 

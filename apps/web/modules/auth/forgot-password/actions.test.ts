@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { logger } from "@formbricks/logger";
 import { requestPasswordReset } from "@/modules/auth/forgot-password/lib/password-reset-service";

@@ -22,7 +22,7 @@ import { requiresPasswordConfirmationForAccountDeletion } from "@/modules/accoun
 import {
   getSsoProviderLookupCandidates,
   normalizeSsoProvider,
-} from "@/modules/ee/sso/lib/provider-normalization";
+} from "@/modules/sso-stub/lib/provider-normalization";
 
 const ACCOUNT_DELETION_SSO_REAUTH_INTENT_TTL_MS = 10 * 60 * 1000;
 const ACCOUNT_DELETION_SSO_REAUTH_MARKER_TTL_MS = 5 * 60 * 1000;

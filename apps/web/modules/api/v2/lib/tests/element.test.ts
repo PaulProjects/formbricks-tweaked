@@ -21,7 +21,7 @@ vi.mock("@/app/lib/api/response", () => ({
   },
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsSpamProtectionEnabled: vi.fn(),
 }));
 

@@ -1,3 +1,7 @@
-import { SegmentsPage } from "@/modules/ee/contacts/segments/page";
+import { notFound } from "next/navigation";
 
-export default SegmentsPage;
+const Page = () => {
+  return notFound();
+};
+
+export default Page;

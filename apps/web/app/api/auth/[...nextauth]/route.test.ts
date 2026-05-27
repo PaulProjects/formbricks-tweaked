@@ -59,7 +59,7 @@ vi.mock("@/modules/auth/lib/authOptions", () => ({
   },
 }));
 
-vi.mock("@/modules/ee/audit-logs/lib/handler", () => ({
+vi.mock("@/modules/audit-logs/lib/handler", () => ({
   queueAuditEventBackground: mocks.queueAuditEventBackground,
 }));
 

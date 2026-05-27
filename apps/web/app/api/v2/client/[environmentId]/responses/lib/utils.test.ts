@@ -9,7 +9,7 @@ import { TResponseInputV2 } from "@/app/api/v2/client/[environmentId]/responses/
 import { responses } from "@/app/lib/api/response";
 import { symmetricDecrypt } from "@/lib/crypto";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
-import { getIsSpamProtectionEnabled } from "@/modules/ee/license-check/lib/utils";
+import { getIsSpamProtectionEnabled } from "@/modules/license-stub/lib/utils";
 
 vi.mock("@/lib/i18n/utils", () => ({
   getLocalizedValue: vi.fn().mockImplementation((value, language) => {
@@ -28,7 +28,7 @@ vi.mock("@/app/lib/api/response", () => ({
   },
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsSpamProtectionEnabled: vi.fn(),
 }));
 

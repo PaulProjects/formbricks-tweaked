@@ -6,7 +6,7 @@ import { getContactAttributeKeys } from "@/modules/api/v2/management/surveys/[su
 import { getSegment } from "@/modules/api/v2/management/surveys/[surveyId]/contact-links/segments/[segmentId]/lib/segment";
 import { getSurvey } from "@/modules/api/v2/management/surveys/[surveyId]/contact-links/segments/[segmentId]/lib/surveys";
 import { ApiErrorResponseV2 } from "@/modules/api/v2/types/api-error";
-import { segmentFilterToPrismaQuery } from "@/modules/ee/contacts/segments/lib/filter/prisma-query";
+import { segmentFilterToPrismaQuery } from "@/modules/contacts-stub/segments/lib/filter/prisma-query";
 
 export const getContactsInSegment = reactCache(
   async (surveyId: string, segmentId: string, limit: number, skip: number, attributeKeys?: string) => {

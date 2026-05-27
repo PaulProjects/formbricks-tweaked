@@ -9,7 +9,7 @@ import { DatabaseError, ResourceNotFoundError } from "@formbricks/types/errors";
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { checkForInvalidMediaInBlocks } from "@/lib/survey/utils";
 import { validateInputs } from "@/lib/utils/validate";
-import { getIsQuotasEnabled } from "@/modules/ee/license-check/lib/utils";
+import { getIsQuotasEnabled } from "@/modules/license-stub/lib/utils";
 import { buildOrderByClause, buildWhereClause } from "@/modules/survey/lib/utils";
 import { doesEnvironmentExist } from "@/modules/survey/list/lib/environment";
 import { getProjectWithLanguagesByEnvironmentId } from "@/modules/survey/list/lib/project";
@@ -62,7 +62,7 @@ vi.mock("@paralleldrive/cuid2", () => ({
   createId: vi.fn(() => "new_cuid2_id"),
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getIsQuotasEnabled: vi.fn(),
 }));
 

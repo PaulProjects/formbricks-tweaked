@@ -5,8 +5,8 @@ import { OrganizationSettingsNavbar } from "@/app/(app)/environments/[environmen
 import { EnterpriseLicenseStatus } from "@/app/(app)/environments/[environmentId]/settings/(organization)/enterprise/components/EnterpriseLicenseStatus";
 import { IS_FORMBRICKS_CLOUD } from "@/lib/constants";
 import { getTranslate } from "@/lingodotdev/server";
-import { GRACE_PERIOD_MS, getEnterpriseLicense } from "@/modules/ee/license-check/lib/license";
 import { getEnvironmentAuth } from "@/modules/environments/lib/utils";
+import { GRACE_PERIOD_MS, getEnterpriseLicense } from "@/modules/license-stub/lib/license";
 import { Button } from "@/modules/ui/components/button";
 import { PageContentWrapper } from "@/modules/ui/components/page-content-wrapper";
 import { PageHeader } from "@/modules/ui/components/page-header";

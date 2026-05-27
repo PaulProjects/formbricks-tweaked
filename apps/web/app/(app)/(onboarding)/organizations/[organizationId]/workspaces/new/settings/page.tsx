@@ -9,7 +9,7 @@ import { DEFAULT_BRAND_COLOR } from "@/lib/constants";
 import { getPublicDomain } from "@/lib/getPublicUrl";
 import { getUserProjects } from "@/lib/project/service";
 import { getTranslate } from "@/lingodotdev/server";
-import { getAccessControlPermission } from "@/modules/ee/license-check/lib/utils";
+import { getAccessControlPermission } from "@/modules/license-stub/lib/utils";
 import { getOrganizationAuth } from "@/modules/organization/lib/utils";
 import { Button } from "@/modules/ui/components/button";
 import { Header } from "@/modules/ui/components/header";

@@ -17,17 +17,17 @@ import { createOrganization } from "@/lib/organization/service";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { actionClient } from "@/lib/utils/action-client";
 import { ActionClientCtx } from "@/lib/utils/action-client/types/context";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { createUser, updateUser } from "@/modules/auth/lib/user";
 import { deleteInvite, getInvite } from "@/modules/auth/signup/lib/invite";
 import { createTeamMembership } from "@/modules/auth/signup/lib/team";
 import { verifyTurnstileToken } from "@/modules/auth/signup/lib/utils";
+import { ensureCloudStripeSetupForOrganization } from "@/modules/billing-stub/lib/organization-billing";
 import { applyIPRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import { ensureCloudStripeSetupForOrganization } from "@/modules/ee/billing/lib/organization-billing";
-import { getIsMultiOrgEnabled } from "@/modules/ee/license-check/lib/utils";
-import { subscribeUserToMailingList } from "@/modules/ee/mailing/lib/mailing-subscription";
 import { sendInviteAcceptedEmail, sendVerificationEmail } from "@/modules/email";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
+import { subscribeUserToMailingList } from "@/modules/mailing-stub/lib/mailing-subscription";
 
 const ZCreatedUser = ZUser.pick({
   name: true,

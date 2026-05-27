@@ -2,11 +2,10 @@ import { OrganizationSettingsNavbar } from "@/app/(app)/environments/[environmen
 import { IS_FORMBRICKS_CLOUD, USER_MANAGEMENT_MINIMUM_ROLE } from "@/lib/constants";
 import { getUserManagementAccess } from "@/lib/membership/utils";
 import { getTranslate } from "@/lingodotdev/server";
-import { getAccessControlPermission } from "@/modules/ee/license-check/lib/utils";
-import { getTeamsWhereUserIsAdmin } from "@/modules/ee/teams/lib/roles";
-import { TeamsView } from "@/modules/ee/teams/team-list/components/teams-view";
 import { getEnvironmentAuth } from "@/modules/environments/lib/utils";
+import { getAccessControlPermission } from "@/modules/license-stub/lib/utils";
 import { MembersView } from "@/modules/organization/settings/teams/components/members-view";
+import { getTeamsWhereUserIsAdmin } from "@/modules/teams-stub/lib/roles";
 import { PageContentWrapper } from "@/modules/ui/components/page-content-wrapper";
 import { PageHeader } from "@/modules/ui/components/page-header";
 
@@ -49,13 +48,6 @@ export const TeamsPage = async (props: { params: Promise<{ environmentId: string
         environmentId={params.environmentId}
         isAccessControlAllowed={isAccessControlAllowed}
         isUserManagementDisabledFromUi={!hasUserManagementAccess}
-      />
-      <TeamsView
-        organizationId={organization.id}
-        membershipRole={currentUserMembership?.role}
-        currentUserId={session.user.id}
-        isAccessControlAllowed={isAccessControlAllowed}
-        environmentId={params.environmentId}
       />
     </PageContentWrapper>
   );

@@ -914,6 +914,7 @@ export const ZSurveyBase = z.object({
   recaptcha: ZSurveyRecaptcha.nullable(),
   isSingleResponsePerEmailEnabled: z.boolean(),
   isBackButtonHidden: z.boolean(),
+  isAutoProgressingEnabled: z.boolean(),
   isCaptureIpEnabled: z.boolean(),
   pin: z
     .string()

@@ -3,8 +3,8 @@ import { logger } from "@formbricks/logger";
 import {
   getDefaultOrganizationBilling,
   getOrganizationBillingWithReadThroughSync,
-} from "@/modules/ee/billing/lib/organization-billing";
-import { getEnterpriseLicense } from "@/modules/ee/license-check/lib/license";
+} from "@/modules/billing-stub/lib/organization-billing";
+import { getEnterpriseLicense } from "@/modules/license-stub/lib/license";
 import { type TOrganizationEntitlementsContext, isEntitlementFeature } from "./types";
 
 const toDateOrNull = (value: Date | string | null | undefined): Date | null => {

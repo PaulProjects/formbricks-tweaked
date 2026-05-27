@@ -5,10 +5,10 @@ import { TMember, TOrganizationRole } from "@formbricks/types/memberships";
 import { TOrganization } from "@formbricks/types/organizations";
 import { getAccessFlags } from "@/lib/membership/utils";
 import { formatDateWithOrdinal } from "@/lib/utils/datetime";
-import { EditMembershipRole } from "@/modules/ee/role-management/components/edit-membership-role";
 import { MemberActions } from "@/modules/organization/settings/teams/components/edit-memberships/member-actions";
 import { isInviteExpired } from "@/modules/organization/settings/teams/lib/utils";
 import { TInvite } from "@/modules/organization/settings/teams/types/invites";
+import { EditMembershipRole } from "@/modules/teams-stub/components/edit-membership-role";
 import { Badge } from "@/modules/ui/components/badge";
 import { TooltipRenderer } from "@/modules/ui/components/tooltip";
 

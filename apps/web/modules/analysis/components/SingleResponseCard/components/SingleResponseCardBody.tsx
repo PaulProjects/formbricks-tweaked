@@ -10,7 +10,6 @@ import { TUserLocale } from "@formbricks/types/user";
 import { getLocalizedValue } from "@/lib/i18n/utils";
 import { getSurveyDateFormatMap } from "@/lib/utils/date-display";
 import { parseRecallInfo } from "@/lib/utils/recall";
-import { ResponseCardQuotas } from "@/modules/ee/quotas/components/single-response-card-quotas";
 import { getElementsFromBlocks } from "@/modules/survey/lib/client-utils";
 import { isValidValue } from "../util";
 import { ElementSkip } from "./ElementSkip";
@@ -147,8 +146,6 @@ export const SingleResponseCardBody = ({
       {survey.hiddenFields.fieldIds && (
         <HiddenFields hiddenFields={survey.hiddenFields} responseData={response.data} />
       )}
-
-      <ResponseCardQuotas quotas={response.quotas} />
 
       {response.finished && (
         <div className="mt-4 flex items-center">

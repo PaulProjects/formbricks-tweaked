@@ -5,8 +5,8 @@ import { IS_DEVELOPMENT, IS_FORMBRICKS_CLOUD } from "@/lib/constants";
 import { getPublicDomain } from "@/lib/getPublicUrl";
 import { getAccessFlags } from "@/lib/membership/utils";
 import { getTranslate } from "@/lingodotdev/server";
-import { getOrganizationProjectsLimit } from "@/modules/ee/license-check/lib/utils";
 import { TEnvironmentLayoutData } from "@/modules/environments/types/environment-auth";
+import { getOrganizationProjectsLimit } from "@/modules/license-stub/lib/utils";
 import { LimitsReachedBanner } from "@/modules/ui/components/limits-reached-banner";
 import { PendingDowngradeBanner } from "@/modules/ui/components/pending-downgrade-banner";
 

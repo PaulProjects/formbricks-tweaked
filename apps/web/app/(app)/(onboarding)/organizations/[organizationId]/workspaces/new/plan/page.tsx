@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { TCloudBillingPlan } from "@formbricks/types/organizations";
 import { IS_FORMBRICKS_CLOUD } from "@/lib/constants";
-import { getOrganizationBillingWithReadThroughSync } from "@/modules/ee/billing/lib/organization-billing";
+import { getOrganizationBillingWithReadThroughSync } from "@/modules/billing-stub/lib/organization-billing";
 import { getOrganizationAuth } from "@/modules/organization/lib/utils";
 import { SelectPlanOnboarding } from "./components/select-plan-onboarding";
 

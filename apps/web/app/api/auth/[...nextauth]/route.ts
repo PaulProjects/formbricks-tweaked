@@ -4,9 +4,9 @@ import { AdapterUser } from "next-auth/adapters";
 import { CredentialInput } from "next-auth/providers/credentials";
 import { logger } from "@formbricks/logger";
 import { IS_PRODUCTION, SENTRY_DSN } from "@/lib/constants";
+import { queueAuditEventBackground } from "@/modules/audit-logs/lib/handler";
+import { UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 import { authOptions as baseAuthOptions } from "@/modules/auth/lib/authOptions";
-import { queueAuditEventBackground } from "@/modules/ee/audit-logs/lib/handler";
-import { UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
 
 export const fetchCache = "force-no-store";
 

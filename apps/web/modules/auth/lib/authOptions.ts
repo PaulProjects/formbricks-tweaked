@@ -24,6 +24,7 @@ import {
   getAccountDeletionSsoReauthIntentFromCallbackUrl,
   validateAccountDeletionSsoReauthenticationCallback,
 } from "@/modules/account/lib/account-deletion-sso-reauth";
+import { UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 import { getAuthCallbackUrlFromCookies } from "@/modules/auth/lib/callback-url";
 import { updateUser, updateUserLastLoginAt } from "@/modules/auth/lib/user";
 import {
@@ -37,9 +38,8 @@ import {
 } from "@/modules/auth/lib/utils";
 import { applyIPRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
-import { UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
-import { getSSOProviders } from "@/modules/ee/sso/lib/providers";
-import { handleSsoCallback } from "@/modules/ee/sso/lib/sso-handlers";
+import { getSSOProviders } from "@/modules/sso-stub/lib/providers";
+import { handleSsoCallback } from "@/modules/sso-stub/lib/sso-handlers";
 import { createBrevoCustomer } from "./brevo";
 
 export const authOptions: NextAuthOptions = {

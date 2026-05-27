@@ -27,8 +27,8 @@ export type TProjectConfig = z.infer<typeof ZProjectConfig>;
 
 export const ZLanguage = z.object({
   id: z.cuid2(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
   code: z.string(),
   alias: z.string().nullable(),
   projectId: z.cuid2(),

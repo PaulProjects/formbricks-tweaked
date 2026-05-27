@@ -5,8 +5,8 @@ import { logger } from "@formbricks/logger";
 import { cache } from "@/lib/cache";
 import { IS_PRODUCTION, SENTRY_DSN } from "@/lib/constants";
 import { hashSecret, verifySecret } from "@/lib/crypto";
-import { queueAuditEventBackground } from "@/modules/ee/audit-logs/lib/handler";
-import { TAuditAction, TAuditStatus, UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
+import { queueAuditEventBackground } from "@/modules/audit-logs/lib/handler";
+import { TAuditAction, TAuditStatus, UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 
 export const hashPassword = async (password: string) => {
   return await hashSecret(password, 12);

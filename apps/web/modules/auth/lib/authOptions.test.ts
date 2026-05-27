@@ -463,10 +463,10 @@ describe("authOptions", () => {
           POSTHOG_KEY: "phc_test_key",
         };
       });
-      vi.doMock("@/modules/ee/sso/lib/providers", () => ({
+      vi.doMock("@/modules/sso-stub/lib/providers", () => ({
         getSSOProviders: vi.fn(() => []),
       }));
-      vi.doMock("@/modules/ee/sso/lib/sso-handlers", () => ({
+      vi.doMock("@/modules/sso-stub/lib/sso-handlers", () => ({
         handleSsoCallback: mockHandleSsoCallback,
       }));
       vi.doMock("@/modules/auth/lib/user", () => ({

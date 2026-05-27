@@ -1,1 +1,7 @@
-export { AttributesPage as default } from "@/modules/ee/contacts/attributes/page";
+import { notFound } from "next/navigation";
+
+const Page = () => {
+  return notFound();
+};
+
+export default Page;

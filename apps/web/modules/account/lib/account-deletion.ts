@@ -13,7 +13,7 @@ import {
 } from "@/modules/account/constants";
 import { requiresPasswordConfirmationForAccountDeletion } from "@/modules/account/lib/account-deletion-auth";
 import { consumeAccountDeletionSsoReauthentication } from "@/modules/account/lib/account-deletion-sso-reauth";
-import { getIsMultiOrgEnabled } from "@/modules/ee/license-check/lib/utils";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
 
 const getPasswordOrThrow = (password?: string) => {
   if (!password) {

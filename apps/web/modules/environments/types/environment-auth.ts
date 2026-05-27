@@ -5,11 +5,8 @@ import { TMembership, ZMembership } from "@formbricks/types/memberships";
 import { TOrganization, ZOrganization } from "@formbricks/types/organizations";
 import { TProject, ZProject } from "@formbricks/types/project";
 import { TUser, ZUser } from "@formbricks/types/user";
-import {
-  TEnterpriseLicenseFeatures,
-  TLicenseStatus,
-} from "@/modules/ee/license-check/types/enterprise-license";
-import { TTeamPermission, ZTeamPermission } from "@/modules/ee/teams/project-teams/types/team";
+import { TEnterpriseLicenseFeatures, TLicenseStatus } from "@/modules/license-stub/types/enterprise-license";
+import { TTeamPermission, ZTeamPermission } from "@/modules/teams-stub/types/team";
 
 // Type for the enterprise license returned by getEnterpriseLicense()
 type TEnterpriseLicense = {

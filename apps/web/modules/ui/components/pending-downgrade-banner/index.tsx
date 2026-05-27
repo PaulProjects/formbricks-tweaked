@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TUserLocale } from "@formbricks/types/user";
 import { formatDateForDisplay } from "@/lib/utils/datetime";
-import type { TLicenseStatus } from "@/modules/ee/license-check/types/enterprise-license";
+import type { TLicenseStatus } from "@/modules/license-stub/types/enterprise-license";
 
 interface PendingDowngradeBannerProps {
   lastChecked: Date;

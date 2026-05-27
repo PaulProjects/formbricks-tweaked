@@ -9,11 +9,11 @@ import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { convertToCsv } from "@/lib/utils/file-conversion";
 import { getOrganizationIdFromSurveyId, getProjectIdFromSurveyId } from "@/lib/utils/helper";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import { generatePersonalLinks } from "@/modules/ee/contacts/lib/contacts";
-import { getIsContactsEnabled } from "@/modules/ee/license-check/lib/utils";
-import { getOrganizationLogoUrl } from "@/modules/ee/whitelabel/email-customization/lib/organization";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
+import { generatePersonalLinks } from "@/modules/contacts-stub/lib/contacts";
 import { sendEmbedSurveyPreviewEmail } from "@/modules/email";
+import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
+import { getOrganizationLogoUrl } from "@/modules/whitelabel/lib/organization-logo";
 import { deleteResponsesAndDisplaysForSurvey } from "./lib/survey";
 
 const ZSendEmbedSurveyPreviewEmailAction = z.object({

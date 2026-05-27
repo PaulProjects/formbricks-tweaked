@@ -136,3 +136,9 @@ input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   background: #0f172a;
 }
+
+/* Hide required badge in surveys */
+[data-testid="fb__surveys__headline-optional-text-test"],
+span.label-card.mb-\[3px\] {
+  display: none !important;
+}

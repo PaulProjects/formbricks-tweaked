@@ -19,10 +19,10 @@ import {
 } from "@/lib/organization/service";
 import { getProjectByEnvironmentId } from "@/lib/project/service";
 import { getUser } from "@/lib/user/service";
-import { getEnterpriseLicense } from "@/modules/ee/license-check/lib/license";
-import { getAccessControlPermission } from "@/modules/ee/license-check/lib/utils";
-import { getProjectPermissionByUserId } from "@/modules/ee/teams/lib/roles";
-import { getTeamPermissionFlags } from "@/modules/ee/teams/utils/teams";
+import { getEnterpriseLicense } from "@/modules/license-stub/lib/license";
+import { getAccessControlPermission } from "@/modules/license-stub/lib/utils";
+import { getProjectPermissionByUserId } from "@/modules/teams-stub/lib/roles";
+import { getTeamPermissionFlags } from "@/modules/teams-stub/utils/teams";
 // Pull in the mocked implementations to configure them in tests
 import {
   environmentIdLayoutChecks,
@@ -44,11 +44,11 @@ vi.mock("@/modules/auth/lib/authOptions", () => ({
   authOptions: {},
 }));
 
-vi.mock("@/modules/ee/teams/lib/roles", () => ({
+vi.mock("@/modules/teams-stub/lib/roles", () => ({
   getProjectPermissionByUserId: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/teams/utils/teams", () => ({
+vi.mock("@/modules/teams-stub/utils/teams", () => ({
   getTeamPermissionFlags: vi.fn(),
 }));
 
@@ -81,11 +81,11 @@ vi.mock("@/lib/user/service", () => ({
   getUser: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/license-check/lib/license", () => ({
+vi.mock("@/modules/license-stub/lib/license", () => ({
   getEnterpriseLicense: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/license-check/lib/utils", () => ({
+vi.mock("@/modules/license-stub/lib/utils", () => ({
   getAccessControlPermission: vi.fn(),
 }));
 

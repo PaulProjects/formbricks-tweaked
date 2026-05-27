@@ -22,11 +22,7 @@ import {
   getSearchParamString,
   resolveAuthCallbackUrl,
 } from "@/modules/auth/lib/callback-url";
-import {
-  getIsMultiOrgEnabled,
-  getIsSamlSsoEnabled,
-  getIsSsoEnabled,
-} from "@/modules/ee/license-check/lib/utils";
+import { getIsMultiOrgEnabled, getIsSamlSsoEnabled, getIsSsoEnabled } from "@/modules/license-stub/lib/utils";
 import { LoginForm } from "./components/login-form";
 
 export const metadata: Metadata = {

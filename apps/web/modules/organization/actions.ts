@@ -9,9 +9,9 @@ import { createMembership } from "@/lib/membership/service";
 import { createOrganization } from "@/lib/organization/service";
 import { updateUser } from "@/lib/user/service";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import { ensureCloudStripeSetupForOrganization } from "@/modules/ee/billing/lib/organization-billing";
-import { getIsMultiOrgEnabled } from "@/modules/ee/license-check/lib/utils";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
+import { ensureCloudStripeSetupForOrganization } from "@/modules/billing-stub/lib/organization-billing";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
 import { createProject } from "@/modules/projects/settings/lib/project";
 
 const ZCreateOrganizationAction = z.object({

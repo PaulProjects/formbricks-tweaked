@@ -14,8 +14,8 @@ import { getSurvey } from "@/lib/survey/service";
 import { getClientIpFromHeaders } from "@/lib/utils/client-ip";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/api/lib/validation";
-import { getIsContactsEnabled } from "@/modules/ee/license-check/lib/utils";
-import { createQuotaFullObject } from "@/modules/ee/quotas/lib/helpers";
+import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
+import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
 import { validateFileUploads } from "@/modules/storage/utils";
 import { createResponseWithQuotaEvaluation } from "./lib/response";
 

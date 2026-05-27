@@ -21,7 +21,7 @@ vi.mock("@/lib/constants", () => ({
   },
 }));
 
-vi.mock("@/modules/ee/audit-logs/lib/handler", () => ({
+vi.mock("@/modules/audit-logs/lib/handler", () => ({
   withAuditLogging: vi.fn((_event: string, _object: string, fn: Function) => fn),
 }));
 

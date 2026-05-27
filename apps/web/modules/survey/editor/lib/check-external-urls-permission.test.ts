@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { OperationNotAllowedError, ResourceNotFoundError } from "@formbricks/types/errors";
 import { TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";

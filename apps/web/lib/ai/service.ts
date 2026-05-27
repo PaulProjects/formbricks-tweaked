@@ -5,7 +5,7 @@ import { OperationNotAllowedError, ResourceNotFoundError } from "@formbricks/typ
 import { env } from "@/lib/env";
 import { getOrganization } from "@/lib/organization/service";
 import { getTranslate } from "@/lingodotdev/server";
-import { getIsAIDataAnalysisEnabled, getIsAISmartToolsEnabled } from "@/modules/ee/license-check/lib/utils";
+import { getIsAIDataAnalysisEnabled, getIsAISmartToolsEnabled } from "@/modules/license-stub/lib/utils";
 
 export interface TOrganizationAIConfig {
   organizationId: string;

@@ -7,7 +7,7 @@ import { updateUser } from "@/lib/user/service";
 import {
   cleanupStripeCustomer,
   ensureCloudStripeSetupForOrganization,
-} from "@/modules/ee/billing/lib/organization-billing";
+} from "@/modules/billing-stub/lib/organization-billing";
 import {
   createOrganization,
   deleteOrganization,
@@ -41,7 +41,7 @@ vi.mock("@/lib/user/service", () => ({
   updateUser: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/billing/lib/organization-billing", () => ({
+vi.mock("@/modules/billing-stub/lib/organization-billing", () => ({
   ensureCloudStripeSetupForOrganization: vi.fn().mockResolvedValue(undefined),
   cleanupStripeCustomer: vi.fn().mockResolvedValue(undefined),
 }));

@@ -24,10 +24,10 @@ import { getUser } from "@/lib/user/service";
 import { validateInputs } from "@/lib/utils/validate";
 import { getTranslate } from "@/lingodotdev/server";
 import { authOptions } from "@/modules/auth/lib/authOptions";
-import { getEnterpriseLicense } from "@/modules/ee/license-check/lib/license";
-import { getAccessControlPermission } from "@/modules/ee/license-check/lib/utils";
-import { getProjectPermissionByUserId } from "@/modules/ee/teams/lib/roles";
-import { getTeamPermissionFlags } from "@/modules/ee/teams/utils/teams";
+import { getEnterpriseLicense } from "@/modules/license-stub/lib/license";
+import { getAccessControlPermission } from "@/modules/license-stub/lib/utils";
+import { getProjectPermissionByUserId } from "@/modules/teams-stub/lib/roles";
+import { getTeamPermissionFlags } from "@/modules/teams-stub/utils/teams";
 import { TEnvironmentAuth, TEnvironmentLayoutData } from "../types/environment-auth";
 
 /**

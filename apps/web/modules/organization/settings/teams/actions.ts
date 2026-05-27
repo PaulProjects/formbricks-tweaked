@@ -14,16 +14,16 @@ import { capturePostHogEvent } from "@/lib/posthog";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { getOrganizationIdFromInviteId } from "@/lib/utils/helper";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
-import { getIsMultiOrgEnabled } from "@/modules/ee/license-check/lib/utils";
-import { checkRoleManagementPermission } from "@/modules/ee/role-management/actions";
-import { getTeamsWhereUserIsAdmin } from "@/modules/ee/teams/lib/roles";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { sendInviteMemberEmail } from "@/modules/email";
+import { getIsMultiOrgEnabled } from "@/modules/license-stub/lib/utils";
 import {
   deleteMembership,
   getMembershipsByUserId,
   getOrganizationOwnerCount,
 } from "@/modules/organization/settings/teams/lib/membership";
+import { checkRoleManagementPermission } from "@/modules/teams-stub/actions";
+import { getTeamsWhereUserIsAdmin } from "@/modules/teams-stub/lib/roles";
 import { deleteInvite, getInvite, inviteUser, refreshInviteExpiration, resendInvite } from "./lib/invite";
 
 const ZDeleteInviteAction = z.object({

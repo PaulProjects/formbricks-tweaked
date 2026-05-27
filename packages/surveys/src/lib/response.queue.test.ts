@@ -331,6 +331,65 @@ describe("ResponseQueue", () => {
     expect(result.success).toBe(false);
   });
 
+  test("processQueue defers to sync when multiple IDB entries exist", async () => {
+    const { countPendingResponses } = await import("./offline-storage");
+    vi.mocked(countPendingResponses).mockResolvedValue(3);
+
+    const offlineQueue = new ResponseQueue(
+      getConfig({ persistOffline: true, surveyId: "s1" }),
+      getSurveyState()
+    );
+    offlineQueue.queue.push({ data: { q1: "answer" }, finished: false });
+
+    const syncSpy = vi.spyOn(offlineQueue, "syncPersistedResponses").mockResolvedValue({
+      success: true,
+      syncedCount: 3,
+    });
+
+    const result = await offlineQueue.processQueue();
+    expect(result.success).toBe(false);
+    expect(syncSpy).toHaveBeenCalled();
+    expect(_syncLocks.getRequestInProgress("s1")).toBe(false);
+  });
+
+  test("processQueue bails out if syncPersistedResponses starts during countPendingResponses await", async () => {
+    const { countPendingResponses } = await import("./offline-storage");
+    // Simulate syncPersistedResponses starting during the async gap
+    vi.mocked(countPendingResponses).mockImplementation(async () => {
+      // While countPendingResponses is resolving, isSyncing becomes true
+      _syncLocks.set("s1", true);
+      return 1;
+    });
+
+    const offlineQueue = new ResponseQueue(
+      getConfig({ persistOffline: true, surveyId: "s1" }),
+      getSurveyState()
+    );
+    offlineQueue.queue.push({ data: { q1: "answer" }, finished: false });
+
+    const sendSpy = vi.spyOn(offlineQueue as any, "sendResponseWithRetry");
+
+    const result = await offlineQueue.processQueue();
+    expect(result.success).toBe(false);
+    expect(sendSpy).not.toHaveBeenCalled();
+  });
+
+  test("processQueue sends directly when it is the only IDB entry", async () => {
+    const { countPendingResponses } = await import("./offline-storage");
+    vi.mocked(countPendingResponses).mockResolvedValue(1);
+
+    const offlineQueue = new ResponseQueue(
+      getConfig({ persistOffline: true, surveyId: "s1" }),
+      getSurveyState()
+    );
+    offlineQueue.queue.push({ data: { q1: "answer" }, finished: false });
+
+    vi.spyOn(offlineQueue as any, "sendResponseWithRetry").mockResolvedValue({ success: true });
+
+    const result = await offlineQueue.processQueue();
+    expect(result.success).toBe(true);
+  });
+
   test("loadPersistedQueue returns 0 when persistOffline is disabled", async () => {
     const count = await queue.loadPersistedQueue();
     expect(count).toBe(0);
@@ -365,6 +424,28 @@ describe("ResponseQueue", () => {
     );
     _syncLocks.set("s1", true);
     const result = await offlineQueue.syncPersistedResponses();
+    expect(result).toEqual({ success: false, syncedCount: 0 });
+  });
+
+  test("syncPersistedResponses returns early when a processQueue request is in flight", async () => {
+    _syncLocks.setRequestInProgress("s1", true);
+    const offlineQueue = new ResponseQueue(
+      getConfig({ persistOffline: true, surveyId: "s1" }),
+      getSurveyState()
+    );
+    const result = await offlineQueue.syncPersistedResponses();
+    expect(result).toEqual({ success: false, syncedCount: 0 });
+  });
+
+  test("syncPersistedResponses on a new instance sees isRequestInProgress from an old instance", async () => {
+    // Simulate instance A having a request in flight (module-level lock)
+    _syncLocks.setRequestInProgress("s1", true);
+    // Instance B is newly created (e.g. React useMemo recomputation)
+    const instanceB = new ResponseQueue(
+      getConfig({ persistOffline: true, surveyId: "s1" }),
+      getSurveyState()
+    );
+    const result = await instanceB.syncPersistedResponses();
     expect(result).toEqual({ success: false, syncedCount: 0 });
   });
 

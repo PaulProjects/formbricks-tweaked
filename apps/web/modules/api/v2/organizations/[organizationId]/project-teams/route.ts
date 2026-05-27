@@ -7,7 +7,7 @@ import { handleApiError } from "@/modules/api/v2/lib/utils";
 import { hasOrganizationIdAndAccess } from "@/modules/api/v2/organizations/[organizationId]/lib/utils";
 import { checkAuthenticationAndAccess } from "@/modules/api/v2/organizations/[organizationId]/project-teams/lib/utils";
 import { ZOrganizationIdSchema } from "@/modules/api/v2/organizations/[organizationId]/types/organizations";
-import { UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
+import { UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
 import {
   createProjectTeam,
   deleteProjectTeam,

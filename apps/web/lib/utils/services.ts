@@ -6,7 +6,7 @@ import { prisma } from "@formbricks/database";
 import { ZId, ZString } from "@formbricks/types/common";
 import { DatabaseError, InvalidInputError, ResourceNotFoundError } from "@formbricks/types/errors";
 import { validateInputs } from "@/lib/utils/validate";
-import { getQuota as getQuotaService } from "@/modules/ee/quotas/lib/quotas";
+import { getQuota as getQuotaService } from "@/modules/quotas-stub/lib/quotas";
 
 export const getActionClass = reactCache(
   async (actionClassId: string): Promise<{ environmentId: string } | null> => {

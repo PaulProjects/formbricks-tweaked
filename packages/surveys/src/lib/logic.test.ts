@@ -28,6 +28,7 @@ describe("Survey Logic", () => {
   const mockSurvey: TJsEnvironmentStateSurvey = {
     id: "survey1",
     name: "Test Survey",
+    isAutoProgressingEnabled: false,
     questions: [], // Deprecated - using blocks instead
     blocks: [
       {

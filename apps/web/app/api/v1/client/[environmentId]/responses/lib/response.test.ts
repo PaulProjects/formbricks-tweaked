@@ -6,7 +6,7 @@ import { TSurveyQuota } from "@formbricks/types/quota";
 import { TResponseInput } from "@formbricks/types/responses";
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { calculateTtcTotal } from "@/lib/response/utils";
-import { evaluateResponseQuotas } from "@/modules/ee/quotas/lib/evaluation-service";
+import { evaluateResponseQuotas } from "@/modules/quotas-stub/lib/evaluation-service";
 import { createResponse, createResponseWithQuotaEvaluation } from "./response";
 
 let mockIsFormbricksCloud = false;
@@ -49,7 +49,7 @@ vi.mock("./contact", () => ({
   getContactByUserId: vi.fn(),
 }));
 
-vi.mock("@/modules/ee/quotas/lib/evaluation-service", () => ({
+vi.mock("@/modules/quotas-stub/lib/evaluation-service", () => ({
   evaluateResponseQuotas: vi.fn(),
 }));
 

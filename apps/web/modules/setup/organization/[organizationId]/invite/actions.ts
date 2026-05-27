@@ -7,7 +7,7 @@ import { ZUserEmail, ZUserName } from "@formbricks/types/user";
 import { INVITE_DISABLED } from "@/lib/constants";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
-import { withAuditLogging } from "@/modules/ee/audit-logs/lib/handler";
+import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { sendInviteMemberEmail } from "@/modules/email";
 import { inviteUser } from "@/modules/setup/organization/[organizationId]/invite/lib/invite";
 

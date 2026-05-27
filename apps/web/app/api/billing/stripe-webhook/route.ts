@@ -1,3 +1,3 @@
-import { POST } from "@/modules/ee/billing/api/route";
+import { NextResponse } from "next/server";
 
-export { POST };
+export const POST = () => NextResponse.json({ error: "Billing is not available" }, { status: 404 });

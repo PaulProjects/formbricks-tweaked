@@ -11,8 +11,8 @@ import { getTagsByEnvironmentId } from "@/lib/tag/service";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import { getOrganizationIdFromSurveyId, getProjectIdFromSurveyId } from "@/lib/utils/helper";
-import { getIsQuotasEnabled } from "@/modules/ee/license-check/lib/utils";
-import { getQuotas } from "@/modules/ee/quotas/lib/quotas";
+import { getIsQuotasEnabled } from "@/modules/license-stub/lib/utils";
+import { getQuotas } from "@/modules/quotas-stub/lib/quotas";
 import { getOrganizationBilling } from "@/modules/survey/lib/survey";
 
 const ZGetResponsesDownloadUrlAction = z.object({

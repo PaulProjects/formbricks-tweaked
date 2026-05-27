@@ -4,7 +4,6 @@ import { v7 as uuidv7 } from "uuid";
 import { prisma } from "@formbricks/database";
 import { logger } from "@formbricks/logger";
 import { ResourceNotFoundError } from "@formbricks/types/errors";
-import { sendTelemetryEvents } from "@/app/api/(internal)/pipeline/lib/telemetry";
 import { ZPipelineInput } from "@/app/api/(internal)/pipeline/types/pipelines";
 import { responses } from "@/app/lib/api/response";
 import { transformErrorToDetails } from "@/app/lib/api/validator";
@@ -16,9 +15,9 @@ import { getResponseCountBySurveyId } from "@/lib/response/service";
 import { getSurvey, updateSurvey } from "@/lib/survey/service";
 import { convertDatesInObject } from "@/lib/time";
 import { createPinnedDispatcher, validateAndResolveWebhookUrl } from "@/lib/utils/validate-webhook-url";
-import { queueAuditEvent } from "@/modules/ee/audit-logs/lib/handler";
-import { TAuditStatus, UNKNOWN_DATA } from "@/modules/ee/audit-logs/types/audit-log";
-import { recordResponseCreatedMeterEvent } from "@/modules/ee/billing/lib/metering";
+import { queueAuditEvent } from "@/modules/audit-logs/lib/handler";
+import { TAuditStatus, UNKNOWN_DATA } from "@/modules/audit-logs/types/audit-log";
+import { recordResponseCreatedMeterEvent } from "@/modules/billing-stub/lib/metering";
 import { sendResponseFinishedEmail } from "@/modules/email";
 import { resolveStorageUrlsInObject } from "@/modules/storage/utils";
 import { sendFollowUpsForResponse } from "@/modules/survey/follow-ups/lib/follow-ups";
@@ -349,9 +348,6 @@ export const POST = async (request: Request) => {
         responseCount,
       });
     }
-
-    // Send telemetry events
-    await sendTelemetryEvents();
   }
 
   return Response.json({ data: {} });

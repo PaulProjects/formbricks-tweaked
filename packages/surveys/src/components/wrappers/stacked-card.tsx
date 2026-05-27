@@ -93,13 +93,13 @@ export const StackedCard = ({
   useEffect(() => {
     setTimeout(() => {
       setDelayedOffset(offset);
-    }, 300);
+    }, 200);
 
     if (offset === 0) {
       setContentOpacity(0);
       setTimeout(() => {
         setContentOpacity(1);
-      }, 300);
+      }, 200);
     }
   }, [offset]);
 
@@ -116,7 +116,7 @@ export const StackedCard = ({
         transform: calculateCardTransform(offset),
         opacity: isHidden ? 0 : (100 - 20 * offset) / 100,
         height: fullSizeCards ? "100%" : currentCardHeight,
-        transition: "transform 600ms ease-in-out, opacity 600ms ease-in-out, width 600ms ease-in-out",
+        transition: "transform 400ms ease-in-out, opacity 400ms ease-in-out, width 400ms ease-in-out",
         pointerEvents: offset === 0 ? "auto" : "none",
         ...borderStyles,
         ...straightCardArrangementStyles,
@@ -126,7 +126,7 @@ export const StackedCard = ({
       <div
         style={{
           opacity: contentOpacity,
-          transition: "opacity 300ms ease-in-out",
+          transition: "opacity 200ms ease-in-out",
           height: "100%",
         }}>
         {delayedOffset === 0 ? getCardContent(dynamicQuestionIndex, offset) : getDummyCardContent()}

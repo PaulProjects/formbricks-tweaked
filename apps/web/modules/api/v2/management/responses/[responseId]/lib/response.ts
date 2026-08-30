@@ -145,7 +145,7 @@ export const updateResponse = async (
       where: {
         id: responseId,
       },
-      data: responseInput,
+      data: { ...responseInput, meta: {} },
     });
 
     return ok(updatedResponse);

@@ -1,6 +1,6 @@
 # Formbricks (Community Fork)
 
-> **Notice:** This is a modified, community fork of Formbricks. The original Formbricks Enterprise Edition (EE) code has been removed. 
+> **Notice:** This is a modified, community fork of Formbricks. The original Formbricks Enterprise Edition (EE) code has been removed. It stores no metadata about survey responses and fixed a bug in the mangement api regarding multilang surveys.
 > Modified by the maintainers of this fork in 2026.
 
 Formbricks provides a free and open source surveying platform. Gather feedback at every point in the user journey with beautiful in-app, website, link and email surveys.

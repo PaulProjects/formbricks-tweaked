@@ -44,18 +44,8 @@ const buildPrismaResponseData = (
   contact: { id: string; attributes: TContactAttributes } | null,
   ttc: Record<string, number>
 ): Prisma.ResponseCreateInput => {
-  const {
-    surveyId,
-    displayId,
-    finished,
-    data,
-    language,
-    meta,
-    singleUseId,
-    variables,
-    createdAt,
-    updatedAt,
-  } = responseInput;
+  const { surveyId, displayId, finished, data, language, singleUseId, variables, createdAt, updatedAt } =
+    responseInput;
 
   return {
     survey: {
@@ -75,7 +65,10 @@ const buildPrismaResponseData = (
       },
       contactAttributes: contact.attributes,
     }),
-    ...(meta && ({ meta } as Prisma.JsonObject)),
+    // This fork stores no response metadata by design (no IP address, browser,
+    // OS, device type or country). Do not restore the upstream meta passthrough
+    // when merging upstream. See README section "No response metadata".
+    meta: {},
     singleUseId,
     ...(variables && { variables }),
     ttc: ttc,

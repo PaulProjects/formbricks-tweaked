@@ -8,7 +8,6 @@ export const authenticatedApiClient = async <S extends ExtendedSchemas>({
   request,
   schemas,
   externalParams,
-  rateLimit = true,
   handler,
   action,
   targetType,
@@ -16,7 +15,6 @@ export const authenticatedApiClient = async <S extends ExtendedSchemas>({
   request: Request;
   schemas?: S;
   externalParams?: Promise<Record<string, any>>;
-  rateLimit?: boolean;
   handler: HandlerFn<ParsedSchemas<S>>;
   action?: TAuditAction;
   targetType?: TAuditTarget;
@@ -29,7 +27,6 @@ export const authenticatedApiClient = async <S extends ExtendedSchemas>({
       request,
       schemas,
       externalParams,
-      rateLimit,
       handler,
       auditLog,
     });

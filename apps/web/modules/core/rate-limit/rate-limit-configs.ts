@@ -9,8 +9,9 @@ export const rateLimitConfigs = {
 
   // API endpoints - higher limits for legitimate usage
   api: {
-    v1: { interval: 60, allowedPerInterval: 100, namespace: "api:v1" }, // 100 per minute (Management API)
-    v2: { interval: 60, allowedPerInterval: 100, namespace: "api:v2" }, // 100 per minute
+    // API key authenticated requests (Management API v1/v2/v3) are not rate limited.
+    // These configs only apply to session-authenticated requests on v1/v3 routes.
+    v1: { interval: 60, allowedPerInterval: 100, namespace: "api:v1" }, // 100 per minute
     v3: { interval: 60, allowedPerInterval: 100, namespace: "api:v3" }, // 100 per minute
     client: { interval: 60, allowedPerInterval: 100, namespace: "api:client" }, // 100 per minute (Client API)
   },

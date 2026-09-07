@@ -3,8 +3,6 @@ import { logger } from "@formbricks/logger";
 import { TAuthenticationApiKey } from "@formbricks/types/auth";
 import { TApiAuditLog } from "@/app/lib/api/with-api-logging";
 import { formatZodError, handleApiError } from "@/modules/api/v2/lib/utils";
-import { applyRateLimit } from "@/modules/core/rate-limit/helpers";
-import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
 import { authenticateRequest } from "./authenticate-request";
 
 export type HandlerFn<TInput = Record<string, unknown>> = ({
@@ -44,14 +42,12 @@ export const apiWrapper = async <S extends ExtendedSchemas>({
   request,
   schemas,
   externalParams,
-  rateLimit = true,
   handler,
   auditLog,
 }: {
   request: Request;
   schemas?: S;
   externalParams?: Promise<Record<string, any>>;
-  rateLimit?: boolean;
   handler: HandlerFn<ParsedSchemas<S>>;
   auditLog?: TApiAuditLog;
 }): Promise<Response> => {
@@ -118,19 +114,6 @@ export const apiWrapper = async <S extends ExtendedSchemas>({
       });
     }
     parsedInput.params = paramsResult.data as ParsedSchemas<S>["params"];
-  }
-
-  if (rateLimit) {
-    try {
-      await applyRateLimit(rateLimitConfigs.api.v2, authentication.data.apiKeyId);
-    } catch (error) {
-      return handleApiError(request, {
-        type: "too_many_requests",
-        details: [
-          { field: "rateLimit", issue: error instanceof Error ? error.message : "Unknown error occurred" },
-        ],
-      });
-    }
   }
 
   return handler({

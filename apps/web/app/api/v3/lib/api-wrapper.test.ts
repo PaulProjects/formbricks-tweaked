@@ -109,10 +109,8 @@ describe("withV3ApiWrapper", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(applyRateLimit)).toHaveBeenCalledWith(
-      expect.objectContaining({ namespace: "api:v3" }),
-      "key_1"
-    );
+    // API key authenticated requests are not rate limited
+    expect(vi.mocked(applyRateLimit)).not.toHaveBeenCalled();
     expect(mockGetServerSession).not.toHaveBeenCalled();
   });
 

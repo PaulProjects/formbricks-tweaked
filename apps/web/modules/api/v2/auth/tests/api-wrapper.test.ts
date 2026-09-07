@@ -4,7 +4,6 @@ import { err, ok } from "@formbricks/types/error-handlers";
 import { apiWrapper } from "@/modules/api/v2/auth/api-wrapper";
 import { authenticateRequest } from "@/modules/api/v2/auth/authenticate-request";
 import { handleApiError } from "@/modules/api/v2/lib/utils";
-import { ApiErrorResponseV2 } from "@/modules/api/v2/types/api-error";
 import { checkRateLimit } from "@/modules/core/rate-limit/rate-limit";
 
 vi.mock("../authenticate-request", () => ({
@@ -13,14 +12,6 @@ vi.mock("../authenticate-request", () => ({
 
 vi.mock("@/modules/core/rate-limit/rate-limit", () => ({
   checkRateLimit: vi.fn(),
-}));
-
-vi.mock("@/modules/core/rate-limit/rate-limit-configs", () => ({
-  rateLimitConfigs: {
-    api: {
-      v2: { interval: 60, allowedPerInterval: 100, namespace: "api:v2" },
-    },
-  },
 }));
 
 vi.mock("@/modules/api/v2/lib/utils", () => ({
@@ -96,7 +87,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { body: bodySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -124,7 +114,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { body: bodySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -148,7 +137,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { body: bodySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -180,7 +168,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { body: bodySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -208,7 +195,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { query: querySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -232,7 +218,6 @@ describe("apiWrapper", () => {
     const response = await apiWrapper({
       request,
       schemas: { query: querySchema },
-      rateLimit: false,
       handler,
     });
 
@@ -252,7 +237,6 @@ describe("apiWrapper", () => {
       request,
       schemas: { params: paramsSchema },
       externalParams: Promise.resolve({ key: "value" }),
-      rateLimit: false,
       handler,
     });
 
@@ -277,7 +261,6 @@ describe("apiWrapper", () => {
       request,
       schemas: { params: paramsSchema },
       externalParams: undefined,
-      rateLimit: false,
       handler,
     });
 
@@ -298,7 +281,6 @@ describe("apiWrapper", () => {
       request,
       schemas: { params: paramsSchema },
       externalParams: Promise.resolve({ notKey: "value" }),
-      rateLimit: false,
       handler,
     });
 
@@ -306,36 +288,12 @@ describe("apiWrapper", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
-  test("should handle rate limit exceeded", async () => {
+  test("should not rate limit API key authenticated requests", async () => {
     const request = new Request("http://localhost", {
       headers: { "x-api-key": "valid-api-key" },
     });
 
     vi.mocked(authenticateRequest).mockResolvedValue(ok(mockAuthentication));
-    vi.mocked(checkRateLimit).mockResolvedValue(ok({ allowed: false }));
-    vi.mocked(handleApiError).mockImplementation(
-      (_request: Request, _error: ApiErrorResponseV2): Response =>
-        new Response("rate limit exceeded", { status: 429 })
-    );
-
-    const handler = vi.fn();
-    const response = await apiWrapper({
-      request,
-      handler,
-    });
-
-    expect(response.status).toBe(429);
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  test("should handle rate limit check failure gracefully", async () => {
-    const request = new Request("http://localhost", {
-      headers: { "x-api-key": "valid-api-key" },
-    });
-
-    vi.mocked(authenticateRequest).mockResolvedValue(ok(mockAuthentication));
-    // When rate limiting fails (e.g., Redis connection issues), checkRateLimit fails open by returning allowed: true
-    vi.mocked(checkRateLimit).mockResolvedValue(ok({ allowed: true }));
 
     const handler = vi.fn().mockResolvedValue(new Response("ok", { status: 200 }));
     const response = await apiWrapper({
@@ -343,8 +301,8 @@ describe("apiWrapper", () => {
       handler,
     });
 
-    // Should fail open for availability
     expect(response.status).toBe(200);
     expect(handler).toHaveBeenCalled();
+    expect(checkRateLimit).not.toHaveBeenCalled();
   });
 });

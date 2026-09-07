@@ -265,17 +265,24 @@ async function authenticateV3RequestOrRespond(
 async function applyV3RateLimitOrRespond(params: {
   authentication: TV3Authentication;
   enabled: boolean;
-  config: TRateLimitConfig;
+  customConfig?: TRateLimitConfig;
   requestId: string;
   log: ReturnType<typeof logger.withContext>;
 }): Promise<Response | null> {
-  const { authentication, enabled, config, requestId, log } = params;
+  const { authentication, enabled, customConfig, requestId, log } = params;
   if (!enabled) {
     return null;
   }
 
   const identifier = getRateLimitIdentifier(authentication);
   if (!identifier) {
+    return null;
+  }
+
+  // API key authentication: no default limit, only explicit per-route limits
+  const isApiKeyAuth = Boolean(authentication && "apiKeyId" in authentication);
+  const config = customConfig ?? (isApiKeyAuth ? null : rateLimitConfigs.api.v3);
+  if (!config) {
     return null;
   }
 
@@ -323,7 +330,7 @@ export const withV3ApiWrapper = <S extends TV3Schemas | undefined, TProps = unkn
       const rateLimitResponse = await applyV3RateLimitOrRespond({
         authentication: authResult.authentication,
         enabled: rateLimit,
-        config: customRateLimitConfig ?? rateLimitConfigs.api.v3,
+        customConfig: customRateLimitConfig,
         requestId,
         log,
       });

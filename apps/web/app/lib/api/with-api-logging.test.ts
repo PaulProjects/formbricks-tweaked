@@ -528,8 +528,7 @@ describe("withV1ApiWrapper", () => {
     expect(mockContextualLoggerError).toHaveBeenCalled();
   });
 
-  test("handles rate limiting errors", async () => {
-    const { applyRateLimit } = await import("@/modules/core/rate-limit/helpers");
+  const mockManagementApiKeyRoute = async () => {
     const { isClientSideApiRoute, isManagementApiRoute, isIntegrationRoute } =
       await import("@/app/middleware/endpoint-validator");
     const { authenticateRequest } = await import("@/app/api/v1/auth");
@@ -541,14 +540,37 @@ describe("withV1ApiWrapper", () => {
       authenticationMethod: AuthenticationMethod.ApiKey,
     });
     vi.mocked(isIntegrationRoute).mockReturnValue(false);
+  };
+
+  test("does not rate limit API key authenticated requests", async () => {
+    const { applyRateLimit } = await import("@/modules/core/rate-limit/helpers");
+    await mockManagementApiKeyRoute();
+
+    const handler = vi.fn().mockResolvedValue({ response: responses.successResponse({}) });
+    const req = createMockRequest({ url: V1_MANAGEMENT_SURVEYS_URL });
+    const { withV1ApiWrapper } = await import("./with-api-logging");
+    const wrapped = withV1ApiWrapper({ handler });
+    const res = await wrapped(req, undefined);
+
+    expect(res.status).toBe(200);
+    expect(applyRateLimit).not.toHaveBeenCalled();
+    expect(handler).toHaveBeenCalled();
+  });
+
+  test("handles rate limiting errors when a custom rate limit config is set", async () => {
+    const { applyRateLimit } = await import("@/modules/core/rate-limit/helpers");
+    await mockManagementApiKeyRoute();
+
     const rateLimitError = new Error("Rate limit exceeded");
-    rateLimitError.message = "Rate limit exceeded";
     vi.mocked(applyRateLimit).mockRejectedValue(rateLimitError);
 
     const handler = vi.fn();
     const req = createMockRequest({ url: V1_MANAGEMENT_SURVEYS_URL });
     const { withV1ApiWrapper } = await import("./with-api-logging");
-    const wrapped = withV1ApiWrapper({ handler });
+    const wrapped = withV1ApiWrapper({
+      handler,
+      customRateLimitConfig: { interval: 60, allowedPerInterval: 5, namespace: "storage:upload" },
+    });
     const res = await wrapped(req, undefined);
 
     expect(res.status).toBe(429);

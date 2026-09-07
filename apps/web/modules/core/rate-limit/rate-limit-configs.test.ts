@@ -68,7 +68,7 @@ describe("rateLimitConfigs", () => {
 
     test("should have all API configurations", () => {
       const apiConfigs = Object.keys(rateLimitConfigs.api);
-      expect(apiConfigs).toEqual(["v1", "v2", "v3", "client"]);
+      expect(apiConfigs).toEqual(["v1", "v3", "client"]);
     });
 
     test("should have all action configurations", () => {
@@ -136,7 +136,6 @@ describe("rateLimitConfigs", () => {
         { config: rateLimitConfigs.auth.login, identifier: "user-login" },
         { config: rateLimitConfigs.auth.signup, identifier: "user-signup" },
         { config: rateLimitConfigs.api.v1, identifier: "api-v1-key" },
-        { config: rateLimitConfigs.api.v2, identifier: "api-v2-key" },
         { config: rateLimitConfigs.api.v3, identifier: "api-v3-key" },
         { config: rateLimitConfigs.api.client, identifier: "client-api-key" },
         { config: rateLimitConfigs.actions.emailUpdate, identifier: "user-profile" },

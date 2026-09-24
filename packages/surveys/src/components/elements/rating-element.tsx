@@ -35,7 +35,7 @@ export function RatingElement({
   const { t } = useTranslation();
   useTtc(element.id, ttc, setTtc, startTime, setStartTime, isCurrent);
 
-  const handleChange = (ratingValue: number) => {
+  const handleChange = (ratingValue: number | undefined) => {
     onChange({ [element.id]: ratingValue });
     const updatedTtcObj = getUpdatedTtc(ttc, element.id, performance.now() - startTime);
     setTtc(updatedTtcObj);

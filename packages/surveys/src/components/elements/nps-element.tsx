@@ -37,7 +37,7 @@ export function NPSElement({
   const { t } = useTranslation();
   useTtc(element.id, ttc, setTtc, startTime, setStartTime, isCurrent);
 
-  const handleChange = (npsValue: number) => {
+  const handleChange = (npsValue: number | undefined) => {
     onChange({ [element.id]: npsValue });
     const updatedTtcObj = getUpdatedTtc(ttc, element.id, performance.now() - startTime);
     setTtc(updatedTtcObj);

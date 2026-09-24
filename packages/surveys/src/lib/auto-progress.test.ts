@@ -33,6 +33,10 @@ describe("auto-progress helpers", () => {
     expect(shouldHideSubmitButtonForAutoProgress([requiredRating], true)).toBe(true);
     expect(shouldHideSubmitButtonForAutoProgress([optionalRating], true)).toBe(false);
     expect(shouldHideSubmitButtonForAutoProgress([requiredRating], false)).toBe(false);
+    // Already answered (navigated back): Next must stay visible
+    expect(shouldHideSubmitButtonForAutoProgress([requiredRating], true, { [requiredRating.id]: 4 })).toBe(
+      false
+    );
   });
 
   test("triggers auto-progress only when an eligible response was changed", () => {

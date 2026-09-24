@@ -2,7 +2,7 @@ import * as React from "react";
 import { ElementError } from "@/components/general/element-error";
 import { ElementHeader } from "@/components/general/element-header";
 import { Label } from "@/components/general/label";
-import { cn, getRTLScaleOptionClasses } from "@/lib/utils";
+import { cn, focusAdjacentScaleOption, getRTLScaleOptionClasses } from "@/lib/utils";
 
 interface NPSProps {
   /** Unique identifier for the element container */
@@ -16,7 +16,7 @@ interface NPSProps {
   /** Currently selected NPS value (0 to 10) */
   value?: number;
   /** Callback function called when NPS value changes */
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   /** Optional label for the lower end of the scale */
   lowerLabel?: string;
   /** Optional label for the upper end of the scale */
@@ -69,17 +69,22 @@ function NPS({
     }
   };
 
+  // Clicking the selected value again clears the answer (native radios can't be unchecked)
+  const handleToggle = (npsValue: number): void => {
+    if (!disabled) {
+      onChange(npsValue === currentValue ? undefined : npsValue);
+    }
+  };
+
   // Handle keyboard navigation
   const handleKeyDown = (npsValue: number) => (e: React.KeyboardEvent) => {
     if (disabled) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleSelect(npsValue);
+      handleToggle(npsValue);
     } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       e.preventDefault();
-      const direction = e.key === "ArrowLeft" ? -1 : 1;
-      const newValue = Math.max(0, Math.min(10, (currentValue ?? 0) + direction));
-      handleSelect(newValue);
+      focusAdjacentScaleOption(e, npsValue, 0, 10);
     }
   };
 
@@ -145,6 +150,9 @@ function NPS({
           checked={isSelected}
           onChange={() => {
             handleSelect(number);
+          }}
+          onClick={() => {
+            if (isSelected) handleToggle(number);
           }}
           disabled={disabled}
           className="sr-only"

@@ -43,7 +43,7 @@ interface SingleSelectProps {
   /** Currently selected option ID */
   value?: string;
   /** Callback function called when selection changes */
-  onChange: (value: string) => void;
+  onChange: (value: string | undefined) => void;
   /** Whether the field is required (shows asterisk indicator) */
   required?: boolean;
   /** Custom label for the required indicator */
@@ -283,7 +283,8 @@ function SingleSelect({
             <ElementError errorMessage={errorMessage} dir={dir} />
             <RadioGroup
               name={inputId}
-              value={selectedValue}
+              // "" instead of undefined: Radix treats undefined as uncontrolled and would keep showing a cleared choice
+              value={selectedValue ?? ""}
               onValueChange={onChange}
               disabled={disabled}
               errorMessage={errorMessage}
@@ -306,6 +307,10 @@ function SingleSelect({
                           id={optionId}
                           disabled={disabled}
                           aria-required={required}
+                          onClick={() => {
+                            // Radios can't be unchecked natively; re-clicking the selected option clears it.
+                            if (isSelected) onChange(undefined);
+                          }}
                         />
                         <span className={cn("mx-3 grow", optionLabelClassName)}>{option.label}</span>
                       </span>
@@ -360,6 +365,10 @@ function SingleSelect({
                           id={optionId}
                           disabled={disabled}
                           aria-required={required}
+                          onClick={() => {
+                            // Radios can't be unchecked natively; re-clicking the selected option clears it.
+                            if (isSelected) onChange(undefined);
+                          }}
                         />
                         <span className={cn("mx-3 grow", optionLabelClassName)}>{option.label}</span>
                       </span>

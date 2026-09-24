@@ -82,7 +82,8 @@ export function BlockConditional({
   const autoProgressElement = getAutoProgressElement(block.elements, isAutoProgressingEnabled);
   const shouldHideSubmitButton = shouldHideSubmitButtonForAutoProgress(
     block.elements,
-    isAutoProgressingEnabled
+    isAutoProgressingEnabled,
+    value
   );
 
   const handleElementChange = (elementId: string, responseData: TResponseData) => {
@@ -116,7 +117,8 @@ export function BlockConditional({
       // Defer submission so element-level change handlers can finalize TTC updates first.
       setTimeout(() => {
         const blockTtc = collectTtcValues();
-        onSubmit(mergedValue, blockTtc);
+        // Only this block's answers, like the regular submit path (previously re-sent the whole response)
+        onSubmit(collectBlockResponses(mergedValue), blockTtc);
         autoProgressingInFlightRef.current = false;
       }, 0);
     }
@@ -284,11 +286,12 @@ export function BlockConditional({
   };
 
   // Collect responses for all elements in this block
-  const collectBlockResponses = (): TResponseData => {
+  const collectBlockResponses = (data: TResponseData = value): TResponseData => {
     const blockResponses: TResponseData = {};
     block.elements.forEach((element) => {
-      if (value[element.id] !== undefined) {
-        blockResponses[element.id] = value[element.id];
+      // Also keep keys the respondent explicitly cleared (present but undefined) so the clear is persisted
+      if (data[element.id] !== undefined || element.id in data) {
+        blockResponses[element.id] = data[element.id];
       }
     });
     return blockResponses;

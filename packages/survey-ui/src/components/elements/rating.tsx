@@ -15,7 +15,7 @@ import {
   TiredFace,
   WearyFace,
 } from "@/components/general/smileys";
-import { cn, getRTLScaleOptionClasses } from "@/lib/utils";
+import { cn, focusAdjacentScaleOption, getRTLScaleOptionClasses } from "@/lib/utils";
 
 /**
  * Get smiley color class based on range and index
@@ -128,7 +128,7 @@ interface RatingProps {
   /** Currently selected rating value (1 to range) */
   value?: number;
   /** Callback function called when rating changes */
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   /** Optional label for the lower end of the scale */
   lowerLabel?: string;
   /** Optional label for the upper end of the scale */
@@ -183,17 +183,22 @@ function Rating({
     }
   };
 
+  // Clicking the selected value again clears the answer (native radios can't be unchecked)
+  const handleToggle = (ratingValue: number): void => {
+    if (!disabled) {
+      onChange(ratingValue === currentValue ? undefined : ratingValue);
+    }
+  };
+
   // Handle keyboard navigation
   const handleKeyDown = (ratingValue: number) => (e: React.KeyboardEvent) => {
     if (disabled) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleSelect(ratingValue);
+      handleToggle(ratingValue);
     } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       e.preventDefault();
-      const direction = e.key === "ArrowLeft" ? -1 : 1;
-      const newValue = Math.max(1, Math.min(range, (currentValue ?? 1) + direction));
-      handleSelect(newValue);
+      focusAdjacentScaleOption(e, ratingValue, 1, range);
     }
   };
 
@@ -271,6 +276,9 @@ function Rating({
           onChange={() => {
             handleSelect(number);
           }}
+          onClick={() => {
+            if (isSelected) handleToggle(number);
+          }}
           disabled={disabled}
           className="sr-only"
           aria-label={`Rate ${String(number)} out of ${String(range)}`}
@@ -320,6 +328,9 @@ function Rating({
           checked={isSelected}
           onChange={() => {
             handleSelect(number);
+          }}
+          onClick={() => {
+            if (isSelected) handleToggle(number);
           }}
           disabled={disabled}
           className="sr-only"
@@ -378,6 +389,9 @@ function Rating({
           checked={isSelected}
           onChange={() => {
             handleSelect(number);
+          }}
+          onClick={() => {
+            if (isSelected) handleToggle(number);
           }}
           disabled={disabled}
           className="sr-only"

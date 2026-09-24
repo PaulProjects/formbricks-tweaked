@@ -950,7 +950,11 @@ export function Survey({
     onChangeVariables(calculatedVariables);
 
     onResponseCreateOrUpdate({
-      data: surveyResponseData,
+      // A cleared answer is undefined, which JSON drops and the server merge would ignore (keeping the old
+      // answer). Send "" instead: Formbricks' "skipped" value. Local state keeps undefined ("" = "other" for single-select).
+      data: Object.fromEntries(
+        Object.entries(surveyResponseData).map(([key, val]) => [key, val === undefined ? "" : val])
+      ),
       ttc: responsettc,
       finished,
       variables: calculatedVariables,

@@ -18,10 +18,12 @@ export const getAutoProgressElement = (
 
 export const shouldHideSubmitButtonForAutoProgress = (
   elements: TSurveyElement[],
-  isAutoProgressingEnabled: boolean
+  isAutoProgressingEnabled: boolean,
+  value: TResponseData = {}
 ): boolean => {
   const autoProgressElement = getAutoProgressElement(elements, isAutoProgressingEnabled);
-  return Boolean(autoProgressElement?.required);
+  // Once answered (e.g. after navigating back), keep "Next" visible so the respondent isn't stuck.
+  return Boolean(autoProgressElement?.required && value[autoProgressElement.id] === undefined);
 };
 
 export const shouldTriggerAutoProgress = ({

@@ -69,3 +69,24 @@ export const getRTLScaleOptionClasses = (
 
   return { borderRadiusClasses, borderClasses };
 };
+
+/**
+ * Arrow-key handling for rating/NPS scales: moves focus from the focused option to its visual neighbour
+ * (mirrored in RTL) without selecting it, so browsing never triggers auto-progress. Enter/Space selects.
+ */
+export function focusAdjacentScaleOption(
+  e: { key: string; currentTarget: EventTarget | null },
+  focusedValue: number,
+  min: number,
+  max: number
+): void {
+  if (!(e.currentTarget instanceof HTMLElement)) return;
+  const isRtl = getComputedStyle(e.currentTarget).direction === "rtl";
+  const step = (e.key === "ArrowRight") === isRtl ? -1 : 1;
+  const target = Math.max(min, Math.min(max, focusedValue + step));
+  e.currentTarget
+    .closest("fieldset")
+    ?.querySelector(`input[value="${String(target)}"]`)
+    ?.closest("label")
+    ?.focus();
+}

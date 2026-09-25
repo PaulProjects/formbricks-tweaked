@@ -3,7 +3,12 @@
 import { z } from "zod";
 import { ZId } from "@formbricks/types/common";
 import { ZIntegrationInput } from "@formbricks/types/integration";
-import { createOrUpdateIntegration, deleteIntegration } from "@/lib/integration/service";
+import { withStoredIntegrationKey } from "@/lib/integration/redact-credentials";
+import {
+  createOrUpdateIntegration,
+  deleteIntegration,
+  getIntegrationByType,
+} from "@/lib/integration/service";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
@@ -43,7 +48,15 @@ export const createOrUpdateIntegrationAction = authenticatedActionClient
       });
 
       ctx.auditLoggingCtx.organizationId = organizationId;
-      const result = await createOrUpdateIntegration(parsedInput.environmentId, parsedInput.integrationData);
+      // The settings pages redact `config.key` (OAuth credentials) before sending the integration to the
+      // client, and the mapping UI echoes it back here. Keep the stored key so a save never overwrites
+      // real tokens with blanks; credentials are only written by the OAuth callbacks.
+      const storedIntegration = await getIntegrationByType(
+        parsedInput.environmentId,
+        parsedInput.integrationData.type
+      );
+      const integrationData = withStoredIntegrationKey(parsedInput.integrationData, storedIntegration);
+      const result = await createOrUpdateIntegration(parsedInput.environmentId, integrationData);
       ctx.auditLoggingCtx.integrationId = result.id;
       ctx.auditLoggingCtx.newObject = result;
 

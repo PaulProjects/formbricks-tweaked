@@ -10,6 +10,7 @@ import {
   NOTION_REDIRECT_URI,
   WEBAPP_URL,
 } from "@/lib/constants";
+import { redactIntegrationCredentials } from "@/lib/integration/redact-credentials";
 import { getIntegrationByType } from "@/lib/integration/service";
 import { getNotionDatabases } from "@/lib/notion/service";
 import { getUserLocale } from "@/lib/user/service";
@@ -54,7 +55,7 @@ const Page = async (props: { params: Promise<{ environmentId: string }> }) => {
         enabled={enabled}
         surveys={surveys}
         environment={environment}
-        notionIntegration={notionIntegration as TIntegrationNotion}
+        notionIntegration={redactIntegrationCredentials(notionIntegration as TIntegrationNotion)}
         webAppUrl={WEBAPP_URL}
         databasesArray={databasesArray}
         locale={locale ?? DEFAULT_LOCALE}

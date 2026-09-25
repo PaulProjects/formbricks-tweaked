@@ -1,7 +1,7 @@
 import { responses } from "@/app/lib/api/response";
 import { withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { AIRTABLE_CLIENT_ID, WEBAPP_URL } from "@/lib/constants";
-import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
+import { hasUserEnvironmentAccessForAction } from "@/lib/environment/auth";
 import { createIntegrationOAuthState, generatePkcePair } from "@/lib/oauth/integration-state";
 
 const scope = `data.records:read data.records:write schema.bases:read schema.bases:write user.email:read`;
@@ -20,7 +20,7 @@ export const GET = withV1ApiWrapper({
       };
     }
 
-    const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+    const canUserAccessEnvironment = await hasUserEnvironmentAccessForAction(
       authentication.user.id,
       environmentId,
       { write: true }

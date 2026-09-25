@@ -10,7 +10,7 @@ import {
   WEBAPP_URL,
 } from "@/lib/constants";
 import { symmetricEncrypt } from "@/lib/crypto";
-import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
+import { hasUserEnvironmentAccessForAction } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
 import {
   IntegrationOAuthStateError,
@@ -51,7 +51,7 @@ export const GET = withV1ApiWrapper({
 
     const environmentId = oauthState.environmentId;
 
-    const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+    const canUserAccessEnvironment = await hasUserEnvironmentAccessForAction(
       authentication.user.id,
       environmentId,
       { write: true }

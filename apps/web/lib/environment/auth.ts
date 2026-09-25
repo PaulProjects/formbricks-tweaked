@@ -65,11 +65,11 @@ export const hasUserEnvironmentAccess = async (userId: string, environmentId: st
 };
 
 /**
- * Authorization for the integration OAuth routes. Completing a flow writes the environment's
- * third-party credentials, so it needs write access — unlike {@link hasUserEnvironmentAccess}, which
- * admits the `billing` role and read-only team members. With `write: false` it still excludes billing.
+ * Action-aware environment access for session users. Unlike {@link hasUserEnvironmentAccess} it never
+ * admits the `billing` role, and with `write: true` a member needs a readWrite/manage team grant. Use it
+ * for routes that expose or mutate environment data (integration OAuth, storage).
  */
-export const canUserAccessEnvironmentIntegrations = async (
+export const hasUserEnvironmentAccessForAction = async (
   userId: string,
   environmentId: string,
   { write }: { write: boolean }

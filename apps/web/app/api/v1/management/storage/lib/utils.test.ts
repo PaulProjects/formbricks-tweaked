@@ -2,7 +2,7 @@ import { Session } from "next-auth";
 import { describe, expect, test, vi } from "vitest";
 import { TAuthenticationApiKey } from "@formbricks/types/auth";
 import { responses } from "@/app/lib/api/response";
-import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { hasUserEnvironmentAccessForAction } from "@/lib/environment/auth";
 import { hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
 import { checkAuth } from "./utils";
 
@@ -12,7 +12,7 @@ const mockNotAuthenticatedResponse = new Response("Not authenticated", { status:
 const mockUnauthorizedResponse = new Response("Unauthorized", { status: 401 });
 
 vi.mock("@/lib/environment/auth", () => ({
-  hasUserEnvironmentAccess: vi.fn(),
+  hasUserEnvironmentAccessForAction: vi.fn(),
 }));
 
 vi.mock("@/modules/organization/settings/api-keys/lib/utils", () => ({
@@ -115,11 +115,11 @@ describe("checkAuth", () => {
       expires: "2024-12-31T23:59:59.999Z",
     };
 
-    vi.mocked(hasUserEnvironmentAccess).mockResolvedValue(false);
+    vi.mocked(hasUserEnvironmentAccessForAction).mockResolvedValue(false);
 
     const result = await checkAuth(mockSession, environmentId);
 
-    expect(hasUserEnvironmentAccess).toHaveBeenCalledWith("user-123", environmentId);
+    expect(hasUserEnvironmentAccessForAction).toHaveBeenCalledWith("user-123", environmentId, { write: true });
     expect(responses.unauthorizedResponse).toHaveBeenCalled();
     expect(result).toBe(mockUnauthorizedResponse);
   });
@@ -132,11 +132,11 @@ describe("checkAuth", () => {
       expires: "2024-12-31T23:59:59.999Z",
     };
 
-    vi.mocked(hasUserEnvironmentAccess).mockResolvedValue(true);
+    vi.mocked(hasUserEnvironmentAccessForAction).mockResolvedValue(true);
 
     const result = await checkAuth(mockSession, environmentId);
 
-    expect(hasUserEnvironmentAccess).toHaveBeenCalledWith("user-123", environmentId);
+    expect(hasUserEnvironmentAccessForAction).toHaveBeenCalledWith("user-123", environmentId, { write: true });
     expect(result).toBeUndefined();
   });
 

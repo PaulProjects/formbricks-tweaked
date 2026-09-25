@@ -4,7 +4,7 @@ import { responses } from "@/app/lib/api/response";
 import { withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { fetchAirtableAuthToken } from "@/lib/airtable/service";
 import { AIRTABLE_CLIENT_ID, WEBAPP_URL } from "@/lib/constants";
-import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
+import { hasUserEnvironmentAccessForAction } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
 import {
   IntegrationOAuthStateError,
@@ -62,7 +62,7 @@ export const GET = withV1ApiWrapper({
       };
     }
 
-    const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+    const canUserAccessEnvironment = await hasUserEnvironmentAccessForAction(
       authentication.user.id,
       environmentId,
       { write: true }

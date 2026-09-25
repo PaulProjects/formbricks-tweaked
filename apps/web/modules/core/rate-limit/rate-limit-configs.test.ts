@@ -63,7 +63,7 @@ describe("rateLimitConfigs", () => {
 
     test("should have all auth configurations", () => {
       const authConfigs = Object.keys(rateLimitConfigs.auth);
-      expect(authConfigs).toEqual(["login", "signup", "forgotPassword", "verifyEmail", "resetPassword"]);
+      expect(authConfigs).toEqual(["login", "signup", "forgotPassword", "verifyEmail", "resetPassword", "emailToken"]);
     });
 
     test("should have all API configurations", () => {

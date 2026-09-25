@@ -144,6 +144,14 @@ export const verifyTokenForLinkSurvey = (token: string, surveyId: string): strin
         email: string;
         surveyId: string;
       };
+
+      // Every token signed with NEXTAUTH_SECRET carries an `email` claim (email, invite and
+      // email-change tokens too), so a primary-secret token must be bound to this survey.
+      // Otherwise e.g. a token from the unauthenticated email-token action clears any survey's
+      // email gate.
+      if (payload.surveyId !== surveyId) {
+        return null;
+      }
     } catch (primaryError) {
       logger.error(primaryError, "Token verification failed with primary method");
 
@@ -156,11 +164,6 @@ export const verifyTokenForLinkSurvey = (token: string, surveyId: string): strin
         logger.error(legacyError, "Token verification failed with legacy method");
         throw new Error("Invalid token");
       }
-    }
-
-    // Verify the surveyId matches if present in payload (new format)
-    if (payload.surveyId && payload.surveyId !== surveyId) {
-      return null;
     }
 
     const { email } = payload;

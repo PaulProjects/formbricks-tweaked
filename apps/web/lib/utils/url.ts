@@ -69,6 +69,12 @@ export const getValidatedCallbackUrl = (
       return null;
     }
 
+    // A same-origin URL can still carry a scheme-relative pathname ("//evil.example") that
+    // navigates off-origin once reduced to pathname+search+hash. (ENG-1636)
+    if (parsedUrl.pathname.startsWith("//")) {
+      return null;
+    }
+
     return parsedUrl.toString();
   } catch {
     return null;

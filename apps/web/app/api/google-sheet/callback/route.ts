@@ -9,7 +9,7 @@ import {
   GOOGLE_SHEETS_REDIRECT_URL,
   WEBAPP_URL,
 } from "@/lib/constants";
-import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
+import { hasUserEnvironmentAccessForAction } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
 import {
   IntegrationOAuthStateError,
@@ -45,11 +45,9 @@ export const GET = async (req: Request) => {
     throw err;
   }
 
-  const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
-    session.user.id,
-    environmentId,
-    { write: true }
-  );
+  const canUserAccessEnvironment = await hasUserEnvironmentAccessForAction(session.user.id, environmentId, {
+    write: true,
+  });
   if (!canUserAccessEnvironment) {
     return responses.unauthorizedResponse();
   }

@@ -2,7 +2,7 @@ import * as z from "zod";
 import { responses } from "@/app/lib/api/response";
 import { withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { getAirtableToken, getTables } from "@/lib/airtable/service";
-import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
 import { getIntegrationByType } from "@/lib/integration/service";
 
 export const GET = withV1ApiWrapper({
@@ -28,7 +28,11 @@ export const GET = withV1ApiWrapper({
       };
     }
 
-    const canUserAccessEnvironment = await hasUserEnvironmentAccess(authentication.user.id, environmentId);
+    const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+      authentication.user.id,
+      environmentId,
+      { write: false }
+    );
     if (!canUserAccessEnvironment) {
       return {
         response: responses.unauthorizedResponse(),

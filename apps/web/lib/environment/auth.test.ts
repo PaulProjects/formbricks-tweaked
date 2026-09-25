@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { prisma } from "@formbricks/database";
 import { DatabaseError } from "@formbricks/types/errors";
-import { hasUserEnvironmentAccess } from "./auth";
+import { canUserAccessEnvironmentIntegrations, hasUserEnvironmentAccess } from "./auth";
 
 vi.mock("@formbricks/database", () => ({
   prisma: {
@@ -10,6 +10,9 @@ vi.mock("@formbricks/database", () => ({
       findFirst: vi.fn(),
     },
     teamUser: {
+      findFirst: vi.fn(),
+    },
+    projectTeam: {
       findFirst: vi.fn(),
     },
   },
@@ -82,5 +85,30 @@ describe("hasUserEnvironmentAccess", () => {
     );
 
     await expect(hasUserEnvironmentAccess("user1", "env1")).rejects.toThrow(DatabaseError);
+  });
+});
+
+describe("canUserAccessEnvironmentIntegrations", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  test("rejects the billing role", async () => {
+    vi.mocked(prisma.membership.findFirst).mockResolvedValue({ role: "billing" } as any);
+    expect(await canUserAccessEnvironmentIntegrations("user1", "env1", { write: false })).toBe(false);
+  });
+
+  test("allows owners", async () => {
+    vi.mocked(prisma.membership.findFirst).mockResolvedValue({ role: "owner" } as any);
+    expect(await canUserAccessEnvironmentIntegrations("user1", "env1", { write: true })).toBe(true);
+  });
+
+  test("requires a readWrite or manage team grant for members to write", async () => {
+    vi.mocked(prisma.membership.findFirst).mockResolvedValue({ role: "member" } as any);
+    vi.mocked(prisma.projectTeam.findFirst).mockResolvedValue(null);
+    expect(await canUserAccessEnvironmentIntegrations("user1", "env1", { write: true })).toBe(false);
+    expect(vi.mocked(prisma.projectTeam.findFirst).mock.calls[0][0]?.where).toMatchObject({
+      permission: { in: ["readWrite", "manage"] },
+    });
   });
 });

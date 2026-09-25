@@ -8,7 +8,7 @@ import {
   GOOGLE_SHEETS_CLIENT_SECRET,
   GOOGLE_SHEETS_REDIRECT_URL,
 } from "@/lib/constants";
-import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
 import { createIntegrationOAuthState } from "@/lib/oauth/integration-state";
 import { authOptions } from "@/modules/auth/lib/authOptions";
 
@@ -29,7 +29,11 @@ export const GET = async (req: NextRequest) => {
     return responses.notAuthenticatedResponse();
   }
 
-  const canUserAccessEnvironment = await hasUserEnvironmentAccess(session?.user.id, environmentId);
+  const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+    session?.user.id,
+    environmentId,
+    { write: true }
+  );
   if (!canUserAccessEnvironment) {
     return responses.unauthorizedResponse();
   }

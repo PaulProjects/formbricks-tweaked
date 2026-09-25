@@ -369,6 +369,8 @@ export const ZResponseInput = z.object({
       ipAddress: z.string().optional(),
     })
     .optional(),
+  // Sent by the survey client on create; needed so the v1 handler can enforce reCAPTCHA.
+  recaptchaToken: z.string().nullish(),
 });
 
 export type TResponseInput = z.infer<typeof ZResponseInput>;

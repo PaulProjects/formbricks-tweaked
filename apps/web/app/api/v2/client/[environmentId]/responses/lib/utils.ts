@@ -8,6 +8,7 @@ import { ENCRYPTION_KEY } from "@/lib/constants";
 import { symmetricDecrypt } from "@/lib/crypto";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { getIsSpamProtectionEnabled } from "@/modules/license-stub/lib/utils";
+import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 
 export const RECAPTCHA_VERIFICATION_ERROR_CODE = "recaptcha_verification_failed";
 
@@ -69,8 +70,27 @@ export const checkSurveyValidity = async (
     }
   }
 
+  // Email verification must be enforced here, not only in the page renderer: this endpoint is public.
+  const verifiedEmailErrorResponse = enforceVerifiedEmailGate({
+    survey,
+    responseData: responseInput.data,
+    metaUrl: responseInput.meta?.url,
+  });
+  if (verifiedEmailErrorResponse) {
+    return verifiedEmailErrorResponse;
+  }
+
+  return await verifyResponseRecaptcha(survey, environmentId, responseInput.recaptchaToken);
+};
+
+/** Shared by the v1 and v2 client response endpoints so the reCAPTCHA gate cannot drift apart. */
+export const verifyResponseRecaptcha = async (
+  survey: TSurvey,
+  environmentId: string,
+  recaptchaToken: string | null | undefined
+): Promise<Response | null> => {
   if (survey.recaptcha?.enabled) {
-    if (!responseInput.recaptchaToken) {
+    if (!recaptchaToken) {
       logger.error("Missing recaptcha token");
       return responses.badRequestResponse(
         "Missing recaptcha token",
@@ -93,7 +113,7 @@ export const checkSurveyValidity = async (
       logger.error("Spam protection is not enabled for this organization");
     }
 
-    const isPassed = await verifyRecaptchaToken(responseInput.recaptchaToken, survey.recaptcha.threshold);
+    const isPassed = await verifyRecaptchaToken(recaptchaToken, survey.recaptcha.threshold);
     if (!isPassed) {
       return responses.badRequestResponse(
         "reCAPTCHA verification failed",

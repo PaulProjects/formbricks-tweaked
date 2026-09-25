@@ -119,3 +119,19 @@ export const convertToEmbedUrl = (url: string): string | undefined => {
   // If no supported platform found, return undefined
   return undefined;
 };
+
+/**
+ * True when a stored media URL is safe to put in an `href`/`src`. The renderer gets survey JSON from
+ * the API, and rows written before `ZStorageUrl` constrained the scheme may still carry `javascript:`
+ * or `data:` URLs. `//host` and `/\host` resolve cross-origin, so only a single leading slash counts as
+ * relative.
+ */
+export const isSafeMediaUrl = (url: string): boolean => {
+  if (/^\/(?![/\\])/.test(url)) return true;
+  try {
+    const { protocol } = new URL(url);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+};

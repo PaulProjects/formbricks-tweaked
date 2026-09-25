@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { useTranslation } from "react-i18next";
+import { isSafeMediaUrl } from "@formbricks/survey-ui";
 import { ExpandIcon } from "@/components/icons/expand-icon";
 import { ImageDownIcon } from "@/components/icons/image-down-icon";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,15 @@ interface ElementMediaProps {
   className?: string;
 }
 
-export function ElementMedia({ imgUrl, videoUrl, altText = "Image", className }: ElementMediaProps) {
+export function ElementMedia({
+  imgUrl: rawImgUrl,
+  videoUrl: rawVideoUrl,
+  altText = "Image",
+  className,
+}: ElementMediaProps) {
+  // Stored rows may predate the http(s)-only ZStorageUrl check; never render an unsafe scheme.
+  const imgUrl = rawImgUrl && isSafeMediaUrl(rawImgUrl) ? rawImgUrl : undefined;
+  const videoUrl = rawVideoUrl && isSafeMediaUrl(rawVideoUrl) ? rawVideoUrl : undefined;
   const { t } = useTranslation();
   const videoUrlWithParams = videoUrl ? getVideoUrlWithParams(videoUrl) : undefined;
   const [isLoading, setIsLoading] = useState(true);

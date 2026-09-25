@@ -225,8 +225,8 @@ services:
     command: valkey-server --appendonly yes
     volumes:
       - redis:/data
-    ports:
-      - "6379:6379"
+    # No host port: the app reaches Valkey over the internal compose network, and a published port
+    # would expose this unauthenticated instance on 0.0.0.0 (Docker bypasses host firewalls like ufw).
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s

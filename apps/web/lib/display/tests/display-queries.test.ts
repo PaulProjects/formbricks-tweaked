@@ -3,8 +3,8 @@ import { prisma } from "@/lib/__mocks__/database";
 import { Prisma } from "@prisma/client";
 import { describe, expect, test, vi } from "vitest";
 import { PrismaErrorType } from "@formbricks/database/types/error";
-import { DatabaseError, ValidationError } from "@formbricks/types/errors";
-import { getDisplaysByContactId, getDisplaysBySurveyIdWithContact } from "../service";
+import { DatabaseError, InvalidInputError, ValidationError } from "@formbricks/types/errors";
+import { assertDisplayOwnership, getDisplaysByContactId, getDisplaysBySurveyIdWithContact } from "../service";
 
 const mockContactId = "clqnj99r9000008lebgf8734j";
 
@@ -215,5 +215,36 @@ describe("getDisplaysBySurveyIdWithContact", () => {
 
       await expect(getDisplaysBySurveyIdWithContact(mockSurveyId)).rejects.toThrow(Error);
     });
+  });
+});
+
+describe("assertDisplayOwnership", () => {
+  const envId = "clqnj99r9000008lebgf8734k";
+  const mockDisplay = (overrides: Record<string, unknown> = {}) =>
+    vi.mocked(prisma.display.findUnique).mockResolvedValue({
+      surveyId: mockSurveyId,
+      contactId: null,
+      response: null,
+      survey: { environmentId: envId },
+      ...overrides,
+    } as any);
+
+  test("accepts a display of the same environment and survey", async () => {
+    mockDisplay();
+    await expect(assertDisplayOwnership(mockDisplayId, envId, mockSurveyId, null)).resolves.toBeUndefined();
+  });
+
+  test("rejects a display from another environment", async () => {
+    mockDisplay({ survey: { environmentId: "clqnj99r9000008lebgf8734z" } });
+    await expect(assertDisplayOwnership(mockDisplayId, envId, mockSurveyId, null)).rejects.toThrow(
+      InvalidInputError
+    );
+  });
+
+  test("rejects a display already linked to a response", async () => {
+    mockDisplay({ response: { id: "resp" } });
+    await expect(assertDisplayOwnership(mockDisplayId, envId, mockSurveyId, null)).rejects.toThrow(
+      InvalidInputError
+    );
   });
 });

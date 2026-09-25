@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@formbricks/database";
 import { ZId } from "@formbricks/types/common";
 import { TDisplay, TDisplayFilters, TDisplayWithContact } from "@formbricks/types/displays";
-import { DatabaseError } from "@formbricks/types/errors";
+import { DatabaseError, InvalidInputError } from "@formbricks/types/errors";
 import { validateInputs } from "../utils/validate";
 
 export const selectDisplay = {
@@ -132,6 +132,58 @@ export const getDisplaysBySurveyIdWithContact = reactCache(
     }
   }
 );
+
+export const getDisplayForResponseValidation = async (
+  displayId: string,
+  tx?: Prisma.TransactionClient
+): Promise<{
+  surveyId: string;
+  environmentId: string;
+  responseId: string | null;
+  contactId: string | null;
+} | null> => {
+  validateInputs([displayId, ZId]);
+  const client = tx ?? prisma;
+  try {
+    const display = await client.display.findUnique({
+      where: { id: displayId },
+      select: {
+        surveyId: true,
+        contactId: true,
+        response: { select: { id: true } },
+        survey: { select: { environmentId: true } },
+      },
+    });
+    if (!display) return null;
+    return {
+      surveyId: display.surveyId,
+      environmentId: display.survey.environmentId,
+      responseId: display.response?.id ?? null,
+      contactId: display.contactId,
+    };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) throw new DatabaseError(error.message);
+    throw error;
+  }
+};
+
+export const assertDisplayOwnership = async (
+  displayId: string,
+  environmentId: string,
+  surveyId: string,
+  contactId: string | null,
+  tx?: Prisma.TransactionClient
+): Promise<void> => {
+  const display = await getDisplayForResponseValidation(displayId, tx);
+  if (!display) throw new InvalidInputError(`Display ${displayId} not found`);
+  if (display.environmentId !== environmentId)
+    throw new InvalidInputError(`Display ${displayId} belongs to a different environment`);
+  if (display.surveyId !== surveyId)
+    throw new InvalidInputError(`Display ${displayId} is associated with a different survey`);
+  if (display.responseId) throw new InvalidInputError(`Display ${displayId} is already linked to a response`);
+  if (display.contactId !== null && display.contactId !== contactId)
+    throw new InvalidInputError(`Display ${displayId} belongs to a different contact`);
+};
 
 export const deleteDisplay = async (displayId: string, tx?: Prisma.TransactionClient): Promise<TDisplay> => {
   validateInputs([displayId, ZId]);

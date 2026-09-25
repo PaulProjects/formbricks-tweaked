@@ -15,6 +15,7 @@ import {
 } from "@/modules/api/v2/management/webhooks/[webhookId]/types/webhooks";
 import { ApiErrorResponseV2 } from "@/modules/api/v2/types/api-error";
 import { hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
+import { omitWebhookSecret } from "@/lib/utils/webhook-secret";
 
 export const GET = async (request: NextRequest, props: { params: Promise<{ webhookId: string }> }) =>
   authenticatedApiClient({
@@ -46,7 +47,7 @@ export const GET = async (request: NextRequest, props: { params: Promise<{ webho
         });
       }
 
-      return responses.successResponse(webhook);
+      return responses.successResponse({ ...webhook, data: omitWebhookSecret(webhook.data) });
     },
   });
 
@@ -126,7 +127,7 @@ export const PUT = async (request: NextRequest, props: { params: Promise<{ webho
         auditLog.newObject = updatedWebhook.data;
       }
 
-      return responses.successResponse(updatedWebhook);
+      return responses.successResponse({ ...updatedWebhook, data: omitWebhookSecret(updatedWebhook.data) });
     },
     action: "updated",
     targetType: "webhook",
@@ -183,7 +184,7 @@ export const DELETE = async (request: NextRequest, props: { params: Promise<{ we
         auditLog.oldObject = webhook.data;
       }
 
-      return responses.successResponse(deletedWebhook);
+      return responses.successResponse({ ...deletedWebhook, data: omitWebhookSecret(deletedWebhook.data) });
     },
     action: "deleted",
     targetType: "webhook",

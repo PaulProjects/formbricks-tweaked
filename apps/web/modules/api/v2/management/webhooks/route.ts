@@ -6,6 +6,7 @@ import { getEnvironmentIdFromSurveyIds } from "@/modules/api/v2/management/lib/h
 import { createWebhook, getWebhooks } from "@/modules/api/v2/management/webhooks/lib/webhook";
 import { ZGetWebhooksFilter, ZWebhookInput } from "@/modules/api/v2/management/webhooks/types/webhooks";
 import { hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
+import { omitWebhookSecret } from "@/lib/utils/webhook-secret";
 
 export const GET = async (request: NextRequest) =>
   authenticatedApiClient({
@@ -30,7 +31,7 @@ export const GET = async (request: NextRequest) =>
       const res = await getWebhooks(environemntIds, query);
 
       if (res.ok) {
-        return responses.successResponse(res.data);
+        return responses.successResponse({ ...res.data, data: res.data.data.map(omitWebhookSecret) });
       }
 
       return handleApiError(request, res.error);

@@ -12,6 +12,7 @@ import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/
 import { validateOtherOptionLengthForMultipleChoice } from "@/modules/api/v2/lib/element";
 import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
 import { validateFileUploads } from "@/modules/storage/utils";
+import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
 import { VERIFIED_EMAIL_RESPONSE_KEY } from "@/modules/survey/link/lib/verify-email-gate";
 import { updateResponseWithQuotaEvaluation } from "./response";
 import { getValidatedResponseUpdateInput } from "./validated-response-update-input";
@@ -239,6 +240,15 @@ export const putResponseHandler = async ({
   if (survey.environmentId !== environmentId) {
     return {
       response: responses.notFoundResponse("Response", responseId, true),
+    };
+  }
+
+  // Mirror the POST endpoint: PIN-protected link surveys require a server-verifiable PIN token (ENG-1579).
+  if (survey.pin && !verifyLinkSurveyPinToken(responseUpdateInput.pinAuthToken, survey.id)) {
+    return {
+      response: responses.forbiddenResponse("Survey is protected by a PIN", true, {
+        surveyId: survey.id,
+      }),
     };
   }
 

@@ -7,6 +7,7 @@ import { TResponseInputV2 } from "@/app/api/v2/client/[environmentId]/responses/
 import { responses } from "@/app/lib/api/response";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { getIsSpamProtectionEnabled } from "@/modules/license-stub/lib/utils";
+import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
 import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 
 export const RECAPTCHA_VERIFICATION_ERROR_CODE = "recaptcha_verification_failed";
@@ -18,6 +19,11 @@ export const checkSurveyValidity = async (
 ): Promise<Response | null> => {
   if (survey.environmentId !== environmentId) {
     return responses.badRequestResponse("Survey does not belong to this environment", undefined, true);
+  }
+
+  // PIN-protected link surveys require a server-verifiable PIN token (ENG-1579).
+  if (survey.pin && !verifyLinkSurveyPinToken(responseInput.pinAuthToken, survey.id)) {
+    return responses.forbiddenResponse("Survey is protected by a PIN", true, { surveyId: survey.id });
   }
 
   const singleUseValidationResult = validateSingleUseResponseInput(survey, environmentId, responseInput);

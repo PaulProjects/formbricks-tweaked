@@ -347,6 +347,7 @@ export const ZResponseInput = z.object({
   userId: z.string().nullish(),
   displayId: z.string().nullish(),
   singleUseId: z.string().nullable().optional(),
+  pinAuthToken: z.string().nullish(),
   finished: z.boolean(),
   endingId: z.string().nullish(),
   language: z.string().optional(),
@@ -382,6 +383,7 @@ export const ZResponseUpdateInput = z.object({
   variables: ZResponseVariables.optional(),
   ttc: ZResponseTtc.optional(),
   language: z.string().optional(),
+  pinAuthToken: z.string().nullish(),
 });
 
 export type TResponseUpdateInput = z.infer<typeof ZResponseUpdateInput>;

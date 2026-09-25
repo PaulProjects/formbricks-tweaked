@@ -124,7 +124,18 @@ export const getSurveyWithMetadata = reactCache(async (surveyId: string) => {
       throw new ResourceNotFoundError("Survey", surveyId);
     }
 
-    return transformPrismaSurvey<TSurvey>(survey);
+    const transformedSurvey = transformPrismaSurvey<TSurvey>(survey);
+
+    // This survey is handed to a client component on the public link-survey page. Follow-up config
+    // (internal recipients, subjects, bodies) and segment filters are not read by the renderer, so
+    // blank them before they reach anonymous visitors.
+    return {
+      ...transformedSurvey,
+      followUps: [],
+      ...(transformedSurvey.segment
+        ? { segment: { ...transformedSurvey.segment, filters: [], description: null } }
+        : {}),
+    };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new DatabaseError(error.message);

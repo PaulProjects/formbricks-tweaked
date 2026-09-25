@@ -70,7 +70,15 @@ export const getEnvironmentAuth = reactCache(async (environmentId: string): Prom
 
   const { isMember, isOwner, isManager, isBilling } = getAccessFlags(currentUserMembership?.role);
 
-  const projectPermission = await getProjectPermissionByUserId(session.user.id, project.id);
+  // Enforce environment access here instead of relying on the route layout (ENG-1769).
+  const [hasEnvironmentAccess, projectPermission] = await Promise.all([
+    hasUserEnvironmentAccess(session.user.id, environmentId),
+    getProjectPermissionByUserId(session.user.id, project.id),
+  ]);
+
+  if (!hasEnvironmentAccess) {
+    throw new AuthorizationError(t("common.not_authorized"));
+  }
 
   const { hasReadAccess, hasReadWriteAccess, hasManageAccess } = getTeamPermissionFlags(projectPermission);
 

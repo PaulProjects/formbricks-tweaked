@@ -125,6 +125,8 @@ export const updateWebhookAction = authenticatedActionClient.inputSchema(ZUpdate
 
 const ZTestEndpointAction = z.object({
   url: z.string(),
+  // Needed to authorize the not-yet-created-webhook path, which otherwise had no check at all.
+  environmentId: ZId,
   webhookId: ZId.optional(),
   secret: z.string().optional(),
 });
@@ -158,6 +160,22 @@ export const testEndpointAction = authenticatedActionClient
 
       secret = webhookResult.data.secret ?? undefined;
     } else {
+      await checkAuthorizationUpdated({
+        userId: ctx.user.id,
+        organizationId: await getOrganizationIdFromEnvironmentId(parsedInput.environmentId),
+        access: [
+          {
+            type: "organization",
+            roles: ["owner", "manager"],
+          },
+          {
+            type: "projectTeam",
+            minPermission: "readWrite",
+            projectId: await getProjectIdFromEnvironmentId(parsedInput.environmentId),
+          },
+        ],
+      });
+
       // New webhook, use the provided secret or generate a new one
       secret = parsedInput.secret ?? generateWebhookSecret();
     }

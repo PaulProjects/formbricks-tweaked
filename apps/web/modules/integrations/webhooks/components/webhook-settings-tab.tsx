@@ -75,6 +75,7 @@ export const WebhookSettingsTab = ({
       setHittingEndpoint(true);
       const testEndpointActionResult = await testEndpointAction({
         url: testEndpointInput,
+        environmentId: webhook.environmentId,
         webhookId: webhook.id,
       });
       if (!testEndpointActionResult?.data?.success) {

@@ -7,7 +7,7 @@ import { OperationNotAllowedError, ResourceNotFoundError } from "@formbricks/typ
 import { TSurvey, ZSurvey } from "@formbricks/types/surveys/types";
 import { POSTHOG_KEY, UNSPLASH_ACCESS_KEY, UNSPLASH_ALLOWED_DOMAINS } from "@/lib/constants";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { actionClient, authenticatedActionClient } from "@/lib/utils/action-client";
+import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { checkAuthorizationUpdated } from "@/lib/utils/action-client/action-client-middleware";
 import {
   getOrganizationIdFromEnvironmentId,
@@ -204,7 +204,8 @@ const ZGetImagesFromUnsplashAction = z.object({
   page: z.number().optional(),
 });
 
-export const getImagesFromUnsplashAction = actionClient
+// Authenticated: both Unsplash actions spend the instance-wide UNSPLASH_ACCESS_KEY quota.
+export const getImagesFromUnsplashAction = authenticatedActionClient
   .inputSchema(ZGetImagesFromUnsplashAction)
   .action(async ({ parsedInput }) => {
     if (!UNSPLASH_ACCESS_KEY) {
@@ -266,7 +267,7 @@ const ZTriggerDownloadUnsplashImageAction = z.object({
   downloadUrl: z.url(),
 });
 
-export const triggerDownloadUnsplashImageAction = actionClient
+export const triggerDownloadUnsplashImageAction = authenticatedActionClient
   .inputSchema(ZTriggerDownloadUnsplashImageAction)
   .action(async ({ parsedInput }) => {
     if (!isValidUnsplashUrl(parsedInput.downloadUrl)) {

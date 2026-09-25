@@ -5,6 +5,7 @@ import { ZAllowedFileExtension } from "@formbricks/types/storage";
 import { TSurveyBlock } from "@formbricks/types/surveys/blocks";
 import { TSurveyQuestion } from "@formbricks/types/surveys/types";
 import {
+  hasStoragePathTraversal,
   isAllowedFileExtension,
   isValidImageFile,
   resolveStorageUrl,
@@ -756,5 +757,18 @@ describe("storage utils", () => {
       expect(fileUrls[1]).toContain("/storage/env-123/public/img.png");
       expect(fileUrls[1].startsWith("http")).toBe(true);
     });
+  });
+});
+
+describe("hasStoragePathTraversal", () => {
+  test("accepts normal file names", () => {
+    expect(hasStoragePathTraversal("report--fid--abc.pdf")).toBe(false);
+    expect(hasStoragePathTraversal("my..file.pdf")).toBe(false);
+  });
+
+  test("rejects raw, encoded and double-encoded dot segments", () => {
+    expect(hasStoragePathTraversal("../other/private/file.pdf")).toBe(true);
+    expect(hasStoragePathTraversal("..%2f..%2fenv%2fprivate%2ffile.pdf")).toBe(true);
+    expect(hasStoragePathTraversal("..%252f..%252fenv%252fprivate%252ffile.pdf")).toBe(true);
   });
 });

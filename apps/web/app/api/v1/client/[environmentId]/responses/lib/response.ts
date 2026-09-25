@@ -2,10 +2,16 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@formbricks/database";
 import { TContactAttributes } from "@formbricks/types/contact-attribute";
-import { DatabaseError, InvalidInputError, ResourceNotFoundError } from "@formbricks/types/errors";
+import {
+  DatabaseError,
+  InvalidInputError,
+  ResourceNotFoundError,
+  UniqueConstraintError,
+} from "@formbricks/types/errors";
 import { TResponseWithQuotaFull } from "@formbricks/types/quota";
 import { TResponse, TResponseInput, ZResponseInput } from "@formbricks/types/responses";
 import { TTag } from "@formbricks/types/tags";
+import { isSingleUseIdUniqueConstraintError } from "@/app/api/client/[environmentId]/responses/lib/response-error";
 import { buildPrismaResponseData } from "@/app/api/v1/lib/utils";
 import { assertDisplayOwnership } from "@/lib/display/service";
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
@@ -142,6 +148,9 @@ export const createResponse = async (
         error.meta.target.includes("displayId")
       ) {
         throw new InvalidInputError(`Display ${responseInput.displayId} is already linked to a response`);
+      }
+      if (isSingleUseIdUniqueConstraintError(error)) {
+        throw new UniqueConstraintError("Response already submitted for this single-use link");
       }
       throw new DatabaseError(error.message);
     }

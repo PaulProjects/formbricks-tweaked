@@ -545,3 +545,19 @@ describe("recall utility functions", () => {
     });
   });
 });
+
+describe("parseRecallInfo escaping", () => {
+  test("HTML-escapes recalled values only when asked", () => {
+    const text = "Hi #recall:q1/fallback:there#";
+    const data = { q1: '<a href="https://evil.example">click</a>' };
+
+    expect(parseRecallInfo(text, data, undefined, false, "en-US", undefined, true)).toBe(
+      "Hi &lt;a href=&quot;https://evil.example&quot;&gt;click&lt;/a&gt;"
+    );
+    expect(parseRecallInfo(text, data)).toBe(`Hi ${data.q1}`);
+  });
+
+  test("does not expand replacement patterns from answers", () => {
+    expect(parseRecallInfo("A #recall:q1/fallback:x#", { q1: "$&$`" })).toBe("A $&$`");
+  });
+});

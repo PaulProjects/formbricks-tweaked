@@ -65,7 +65,8 @@ export const createOrUpdateIntegrationAction = authenticatedActionClient
         organization_id: organizationId,
       });
 
-      return result;
+      // Only the id leaves the action: the row carries the provider OAuth tokens in config.key (ENG-2292).
+      return { id: result.id };
     })
   );
 
@@ -97,6 +98,7 @@ export const deleteIntegrationAction = authenticatedActionClient.inputSchema(ZDe
     ctx.auditLoggingCtx.integrationId = parsedInput.integrationId;
     const result = await deleteIntegration(parsedInput.integrationId);
     ctx.auditLoggingCtx.oldObject = result;
-    return result;
+    // Only the id leaves the action: the deleted row still carries the live OAuth tokens (ENG-2292).
+    return { id: result.id };
   })
 );

@@ -6,6 +6,7 @@ import { InvalidInputError } from "@formbricks/types/errors";
 import { TResponseWithQuotaFull } from "@formbricks/types/quota";
 import { TResponseInput, ZResponseInput } from "@formbricks/types/responses";
 import { TSurvey } from "@formbricks/types/surveys/types";
+import { verifyResponseRecaptcha } from "@/app/api/v2/client/[environmentId]/responses/lib/utils";
 import { responses } from "@/app/lib/api/response";
 import { transformErrorToDetails } from "@/app/lib/api/validator";
 import { THandlerParams, withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
@@ -19,6 +20,7 @@ import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/
 import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
 import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
 import { validateFileUploads } from "@/modules/storage/utils";
+import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 import { createResponseWithQuotaEvaluation } from "./lib/response";
 
 export const OPTIONS = async (): Promise<Response> => {
@@ -235,6 +237,27 @@ export const POST = withV1ApiWrapper({
           ),
         };
       }
+    }
+
+    // Email verification must be enforced here, not only in the renderer: this endpoint is public, so a
+    // caller could otherwise submit any `verifiedEmail`. Shared with the v2 endpoint.
+    const verifiedEmailErrorResponse = enforceVerifiedEmailGate({
+      survey,
+      responseData: responseInputData.data,
+      metaUrl: responseInputData.meta?.url,
+    });
+    if (verifiedEmailErrorResponse) {
+      return { response: verifiedEmailErrorResponse };
+    }
+
+    // Same reCAPTCHA gate as v2; without it the v1 URL opts out of spam protection.
+    const recaptchaErrorResponse = await verifyResponseRecaptcha(
+      survey,
+      environmentId,
+      responseInputData.recaptchaToken
+    );
+    if (recaptchaErrorResponse) {
+      return { response: recaptchaErrorResponse };
     }
 
     if (!validateFileUploads(responseInputData.data, survey.questions)) {

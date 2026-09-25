@@ -88,6 +88,10 @@ export const renderSurvey = async ({
     return <SurveyCompletedMessage singleUseMessage={survey.singleUse} project={project} />;
   }
 
+  // Every prop passed to a client component is serialized into the page payload, so the survey handed to
+  // them must never carry the PIN; the PIN gate stays server-side (validateSurveyPinAction).
+  const publicSurvey: TSurvey = { ...survey, pin: null };
+
   // Handle email verification flow if enabled
   let emailVerificationStatus = "";
   let verifiedEmail: string | undefined = undefined;
@@ -106,7 +110,7 @@ export const renderSurvey = async ({
     if (emailVerificationStatus === "fishy") {
       return (
         <VerifyEmail
-          survey={survey}
+          survey={publicSurvey}
           isErrorComponent={true}
           languageCode={getLanguageCode(langParam, survey)}
           styling={project.styling}
@@ -117,7 +121,7 @@ export const renderSurvey = async ({
     return (
       <VerifyEmail
         singleUseId={searchParams.suId ?? ""}
-        survey={survey}
+        survey={publicSurvey}
         languageCode={getLanguageCode(langParam, survey)}
         styling={project.styling}
         locale={locale}
@@ -159,7 +163,7 @@ export const renderSurvey = async ({
   // Render interactive survey with client component for interactivity
   return (
     <SurveyClientWrapper
-      survey={survey}
+      survey={publicSurvey}
       project={project}
       styling={styling}
       publicDomain={publicDomain}

@@ -2,11 +2,12 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@formbricks/database";
 import { TContactAttributes } from "@formbricks/types/contact-attribute";
-import { DatabaseError, ResourceNotFoundError } from "@formbricks/types/errors";
+import { DatabaseError, InvalidInputError, ResourceNotFoundError } from "@formbricks/types/errors";
 import { TResponseWithQuotaFull } from "@formbricks/types/quota";
 import { TResponse, TResponseInput, ZResponseInput } from "@formbricks/types/responses";
 import { TTag } from "@formbricks/types/tags";
 import { buildPrismaResponseData } from "@/app/api/v1/lib/utils";
+import { assertDisplayOwnership } from "@/lib/display/service";
 import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { calculateTtcTotal } from "@/lib/response/utils";
 import { validateInputs } from "@/lib/utils/validate";
@@ -98,6 +99,16 @@ export const createResponse = async (
 
     const ttc = initialTtc ? (finished ? calculateTtcTotal(initialTtc) : initialTtc) : {};
 
+    if (responseInput.displayId) {
+      await assertDisplayOwnership(
+        responseInput.displayId,
+        environmentId,
+        responseInput.surveyId,
+        contact?.id ?? null,
+        tx
+      );
+    }
+
     const prismaData = buildPrismaResponseData(
       { ...responseInput, createdAt: undefined, updatedAt: undefined },
       contact,
@@ -125,6 +136,13 @@ export const createResponse = async (
     return response;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (
+        error.code === "P2002" &&
+        Array.isArray(error.meta?.target) &&
+        error.meta.target.includes("displayId")
+      ) {
+        throw new InvalidInputError(`Display ${responseInput.displayId} is already linked to a response`);
+      }
       throw new DatabaseError(error.message);
     }
 

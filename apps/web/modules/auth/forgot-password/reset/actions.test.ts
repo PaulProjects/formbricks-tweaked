@@ -15,6 +15,10 @@ vi.mock("@/modules/auth/forgot-password/lib/password-reset-service", () => ({
   completePasswordReset: vi.fn(),
 }));
 
+vi.mock("@/modules/core/rate-limit/helpers", () => ({
+  applyIPRateLimit: vi.fn(),
+}));
+
 vi.mock("@/lib/constants", () => ({
   get PASSWORD_RESET_DISABLED() {
     return constantsState.passwordResetDisabled;

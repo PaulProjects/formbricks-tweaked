@@ -7,6 +7,8 @@ import { PASSWORD_RESET_DISABLED } from "@/lib/constants";
 import { actionClient } from "@/lib/utils/action-client";
 import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { completePasswordReset } from "@/modules/auth/forgot-password/lib/password-reset-service";
+import { applyIPRateLimit } from "@/modules/core/rate-limit/helpers";
+import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
 
 const ZResetPasswordAction = z.object({
   token: z.string().min(1),
@@ -15,6 +17,8 @@ const ZResetPasswordAction = z.object({
 
 export const resetPasswordAction = actionClient.inputSchema(ZResetPasswordAction).action(
   withAuditLogging("updated", "user", async ({ ctx, parsedInput }) => {
+    await applyIPRateLimit(rateLimitConfigs.auth.resetPassword);
+
     if (PASSWORD_RESET_DISABLED) {
       throw new OperationNotAllowedError("Password reset is disabled");
     }

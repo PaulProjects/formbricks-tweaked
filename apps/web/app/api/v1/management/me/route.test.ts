@@ -40,6 +40,17 @@ vi.mock("@/app/api/v1/management/me/lib/utils", () => ({
   getSessionUser: mocks.getSessionUser,
 }));
 
+// The API-key path reads the environment via getEnvironment since #7961 (see lib/api-key-response.ts).
+vi.mock("@/lib/environment/service", () => ({
+  getEnvironment: vi.fn(async (id: string) => ({
+    id,
+    type: "development",
+    createdAt: new Date("2025-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2025-01-02T00:00:00.000Z"),
+    appSetupCompleted: true,
+  })),
+}));
+
 vi.mock("@/app/lib/api/response", () => ({
   responses: {
     notAuthenticatedResponse: mocks.notAuthenticatedResponse,
@@ -138,6 +149,7 @@ describe("v1 management me route", () => {
       apiKeyEnvironments: [
         {
           permission: "manage",
+          environmentId: "env_123",
           environment: {
             id: "env_123",
             type: "development",

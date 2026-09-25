@@ -7,6 +7,7 @@ import {
   NOTION_REDIRECT_URI,
 } from "@/lib/constants";
 import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { createIntegrationOAuthState } from "@/lib/oauth/integration-state";
 
 export const GET = withV1ApiWrapper({
   handler: async ({ req, authentication }) => {
@@ -50,8 +51,16 @@ export const GET = withV1ApiWrapper({
         response: responses.internalServerErrorResponse("Notion auth url is missing"),
       };
 
+    const state = await createIntegrationOAuthState({
+      provider: "notion",
+      userId: authentication.user.id,
+      environmentId,
+    });
+    const authUrl = new URL(auth_url);
+    authUrl.searchParams.set("state", state);
+
     return {
-      response: responses.successResponse({ authUrl: `${auth_url}&state=${environmentId}` }),
+      response: responses.successResponse({ authUrl: authUrl.toString() }),
     };
   },
 });

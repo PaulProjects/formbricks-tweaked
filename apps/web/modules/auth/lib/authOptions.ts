@@ -328,6 +328,11 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, user }) {
+      // Deactivated users keep their session row. An empty session makes getServerSession()
+      // return null, so every caller (actions, API routes, storage) treats them as signed out.
+      if ("isActive" in user && user.isActive === false) {
+        return {} as typeof session;
+      }
       if (session.user) {
         session.user.id = user.id;
         if ("isActive" in user && typeof user.isActive === "boolean") {

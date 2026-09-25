@@ -1,7 +1,10 @@
 import { logger } from "@formbricks/logger";
 import { DatabaseError } from "@formbricks/types/errors";
 import { ZSurveyCreateInputWithEnvironmentId } from "@formbricks/types/surveys/types";
-import { checkFeaturePermissions } from "@/app/api/v1/management/surveys/lib/utils";
+import {
+  checkFeaturePermissions,
+  getReadableEnvironmentIds,
+} from "@/app/api/v1/management/surveys/lib/utils";
 import { responses } from "@/app/lib/api/response";
 import {
   transformBlocksToQuestions,
@@ -17,6 +20,7 @@ import { resolveStorageUrlsInObject } from "@/modules/storage/utils";
 import { getSurveys } from "./lib/surveys";
 
 export const GET = withV1ApiWrapper({
+  allowOrganizationOnlyApiKey: true,
   handler: async ({ req, authentication }) => {
     if (!authentication || !("apiKeyId" in authentication)) {
       return { response: responses.notAuthenticatedResponse() };
@@ -27,9 +31,10 @@ export const GET = withV1ApiWrapper({
       const limit = searchParams.has("limit") ? Number(searchParams.get("limit")) : undefined;
       const offset = searchParams.has("offset") ? Number(searchParams.get("offset")) : undefined;
 
-      const environmentIds = authentication.environmentPermissions.map(
-        (permission) => permission.environmentId
-      );
+      const environmentIds = await getReadableEnvironmentIds(authentication);
+      if (!environmentIds) {
+        return { response: responses.unauthorizedResponse() };
+      }
 
       const surveys = await getSurveys(environmentIds, limit, offset);
 

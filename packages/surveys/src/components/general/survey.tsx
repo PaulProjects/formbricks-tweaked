@@ -103,6 +103,7 @@ export function Survey({
   action,
   singleUseId,
   singleUseResponseId,
+  pinAuthToken,
   isWebEnvironment = true,
   getRecaptchaToken,
   isSpamProtectionEnabled,
@@ -124,13 +125,23 @@ export function Survey({
   const surveyState = useMemo(() => {
     if (appUrl && environmentId) {
       if (mode === "inline") {
-        return new SurveyState(survey.id, singleUseId, singleUseResponseId, userId, contactId);
+        return new SurveyState(survey.id, singleUseId, singleUseResponseId, userId, contactId, pinAuthToken);
       }
 
-      return new SurveyState(survey.id, null, null, userId, contactId);
+      return new SurveyState(survey.id, null, null, userId, contactId, pinAuthToken);
     }
     return null;
-  }, [appUrl, environmentId, mode, survey.id, userId, singleUseId, singleUseResponseId, contactId]);
+  }, [
+    appUrl,
+    environmentId,
+    mode,
+    survey.id,
+    userId,
+    singleUseId,
+    singleUseResponseId,
+    contactId,
+    pinAuthToken,
+  ]);
 
   // Update the responseQueue to use the stored responseId
 

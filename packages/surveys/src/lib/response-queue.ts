@@ -425,6 +425,7 @@ export class ResponseQueue {
         response = await this.api.updateResponse({
           ...responseUpdate,
           responseId: this.surveyState.responseId,
+          pinAuthToken: this.surveyState.pinAuthToken || null,
         });
 
         if (!response.ok) {
@@ -439,6 +440,7 @@ export class ResponseQueue {
           userId: this.surveyState.userId || null,
           singleUseId: this.surveyState.singleUseId || null,
           displayId: this.surveyState.displayId,
+          pinAuthToken: this.surveyState.pinAuthToken || null,
           recaptchaToken: this.responseRecaptchaToken ?? undefined,
         });
 

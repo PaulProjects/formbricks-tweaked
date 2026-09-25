@@ -38,6 +38,7 @@ const getSurveyState: () => SurveyState = () => ({
   contactId: "contact1",
   surveyId: "survey1",
   singleUseId: "single1",
+  pinAuthToken: null,
   shouldCreateResponseFromState: false,
   responseAcc: { finished: false, data: {}, ttc: {}, variables: {} },
   updateResponseId: vi.fn(),

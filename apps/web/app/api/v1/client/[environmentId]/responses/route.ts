@@ -19,6 +19,7 @@ import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/
 import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
 import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
 import { validateFileUploads } from "@/modules/storage/utils";
+import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
 import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 import { createResponseWithQuotaEvaluation } from "./lib/response";
 
@@ -127,6 +128,13 @@ export const POST = withV1ApiWrapper({
     if (survey.environmentId !== environmentId) {
       return {
         response: responses.badRequestResponse("Survey does not belong to this environment", undefined, true),
+      };
+    }
+
+    // PIN-protected link surveys require a server-verifiable PIN token (ENG-1579).
+    if (survey.pin && !verifyLinkSurveyPinToken(responseInputData.pinAuthToken, survey.id)) {
+      return {
+        response: responses.forbiddenResponse("Survey is protected by a PIN", true, { surveyId: survey.id }),
       };
     }
 

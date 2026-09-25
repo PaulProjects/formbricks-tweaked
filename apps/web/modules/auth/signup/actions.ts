@@ -12,7 +12,6 @@ import {
   TURNSTILE_SECRET_KEY,
   WEBAPP_URL,
 } from "@/lib/constants";
-import { verifyInviteToken } from "@/lib/jwt";
 import { createMembership } from "@/lib/membership/service";
 import { createOrganization } from "@/lib/organization/service";
 import { capturePostHogEvent } from "@/lib/posthog";
@@ -20,7 +19,8 @@ import { actionClient } from "@/lib/utils/action-client";
 import { ActionClientCtx } from "@/lib/utils/action-client/types/context";
 import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
 import { createUser, updateUser } from "@/modules/auth/lib/user";
-import { deleteInvite, getInvite } from "@/modules/auth/signup/lib/invite";
+import { deleteInvite } from "@/modules/auth/signup/lib/invite";
+import { assertSignupAllowed, getValidInvite } from "@/modules/auth/signup/lib/signup-policy";
 import { createTeamMembership } from "@/modules/auth/signup/lib/team";
 import { verifyTurnstileToken } from "@/modules/auth/signup/lib/utils";
 import { ensureCloudStripeSetupForOrganization } from "@/modules/billing-stub/lib/organization-billing";
@@ -102,12 +102,7 @@ async function handleInviteAcceptance(
   inviteToken: string,
   user: TCreatedUser
 ): Promise<void> {
-  const inviteTokenData = verifyInviteToken(inviteToken);
-  const invite = await getInvite(inviteTokenData.inviteId);
-
-  if (!invite) {
-    throw new Error("Invalid invite ID");
-  }
+  const invite = await getValidInvite(inviteToken, user.email);
   ctx.auditLoggingCtx.organizationId = invite.organizationId;
 
   await createMembership(invite.organizationId, user.id, {
@@ -215,6 +210,7 @@ export const createUserAction = actionClient.inputSchema(ZCreateUserAction).acti
   withAuditLogging("created", "user", async ({ ctx, parsedInput }) => {
     await applyIPRateLimit(rateLimitConfigs.auth.signup);
     await verifyTurnstileIfConfigured(parsedInput.turnstileToken);
+    await assertSignupAllowed(parsedInput.inviteToken, parsedInput.email);
 
     const hashedPassword = await hashPassword(parsedInput.password);
     const { user, userAlreadyExisted } = await createUserSafely(

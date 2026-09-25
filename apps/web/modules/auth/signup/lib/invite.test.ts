@@ -104,6 +104,8 @@ describe("Invite Management", () => {
           organizationId: true,
           role: true,
           teamIds: true,
+          email: true,
+          expiresAt: true,
           creator: {
             select: {
               name: true,

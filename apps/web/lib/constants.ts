@@ -226,6 +226,13 @@ export const PROMETHEUS_ENABLED = env.PROMETHEUS_ENABLED === "1";
 
 export const USER_MANAGEMENT_MINIMUM_ROLE = env.USER_MANAGEMENT_MINIMUM_ROLE ?? "manager";
 
+/**
+ * Number of reverse proxies in front of the app whose `X-Forwarded-For` entries may be believed.
+ * Deployments with a longer chain (e.g. CDN + proxy = 2) must raise it; higher than the real chain
+ * lets callers spoof their address again.
+ */
+export const TRUSTED_PROXY_HOP_COUNT = env.TRUSTED_PROXY_HOP_COUNT ?? 1;
+
 export const AUDIT_LOG_ENABLED = env.AUDIT_LOG_ENABLED === "1";
 export const AUDIT_LOG_GET_USER_IP = env.AUDIT_LOG_GET_USER_IP === "1";
 export const SESSION_MAX_AGE = Number(env.SESSION_MAX_AGE) || 86400;

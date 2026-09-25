@@ -23,6 +23,7 @@ import { getIsQuotasEnabled } from "@/modules/license-stub/lib/utils";
 import { reduceQuotaLimits } from "@/modules/quotas-stub/lib/quotas";
 import { deleteFile } from "@/modules/storage/service";
 import { resolveStorageUrlsInObject } from "@/modules/storage/utils";
+import { hasStoragePathTraversal } from "@/modules/storage/utils";
 import { getOrganizationIdFromEnvironmentId } from "@/modules/survey/lib/organization";
 import { getOrganizationBilling } from "@/modules/survey/lib/survey";
 import { ITEMS_PER_PAGE } from "../constants";
@@ -573,6 +574,11 @@ const findAndDeleteUploadedFilesInResponse = async (response: TResponse, survey:
 
       if (!environmentId || !accessType || !fileName) {
         throw new Error(`Invalid file path: ${pathname}`);
+      }
+
+      // Never trust the storage id in a stored URL: only delete files of the survey's own environment.
+      if (environmentId !== survey.environmentId || hasStoragePathTraversal(fileName)) {
+        throw new Error(`Refusing to delete file outside the survey's environment: ${pathname}`);
       }
 
       return deleteFile(environmentId, accessType as "private" | "public", fileName);

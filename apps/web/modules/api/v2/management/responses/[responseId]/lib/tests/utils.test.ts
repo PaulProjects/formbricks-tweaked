@@ -23,7 +23,11 @@ describe("findAndDeleteUploadedFilesInResponse", () => {
   test("delete files for file upload questions and return okVoid", async () => {
     vi.mocked(deleteFile).mockResolvedValue({ ok: true, data: undefined });
 
-    const result = await findAndDeleteUploadedFilesInResponse(responseData, [fileUploadQuestion]);
+    const result = await findAndDeleteUploadedFilesInResponse(
+      responseData,
+      [fileUploadQuestion],
+      environmentId
+    );
 
     expect(deleteFile).toHaveBeenCalledTimes(2);
     expect(deleteFile).toHaveBeenCalledWith(environmentId, "private", "file1.png");
@@ -32,7 +36,11 @@ describe("findAndDeleteUploadedFilesInResponse", () => {
   });
 
   test("not call deleteFile if no file upload questions match response data", async () => {
-    const result = await findAndDeleteUploadedFilesInResponse(responseData, [openTextQuestion]);
+    const result = await findAndDeleteUploadedFilesInResponse(
+      responseData,
+      [openTextQuestion],
+      environmentId
+    );
 
     expect(deleteFile).not.toHaveBeenCalled();
     expect(result).toEqual(okVoid());
@@ -46,7 +54,11 @@ describe("findAndDeleteUploadedFilesInResponse", () => {
 
     const loggerSpy = vi.spyOn(logger, "error");
 
-    const result = await findAndDeleteUploadedFilesInResponse(responseData, [fileUploadQuestion]);
+    const result = await findAndDeleteUploadedFilesInResponse(
+      responseData,
+      [fileUploadQuestion],
+      environmentId
+    );
 
     expect(deleteFile).not.toHaveBeenCalled();
     expect(loggerSpy).toHaveBeenCalled();
@@ -58,11 +70,21 @@ describe("findAndDeleteUploadedFilesInResponse", () => {
   test("process multiple file URLs", async () => {
     vi.mocked(deleteFile).mockResolvedValue({ ok: true, data: undefined });
 
-    const result = await findAndDeleteUploadedFilesInResponse(responseData, [fileUploadQuestion]);
+    const result = await findAndDeleteUploadedFilesInResponse(
+      responseData,
+      [fileUploadQuestion],
+      environmentId
+    );
 
     expect(deleteFile).toHaveBeenCalledTimes(2);
     expect(deleteFile).toHaveBeenNthCalledWith(1, environmentId, "private", "file1.png");
     expect(deleteFile).toHaveBeenNthCalledWith(2, environmentId, "private", "file2.pdf");
     expect(result).toEqual(okVoid());
+  });
+
+  test("skips files that belong to another environment", async () => {
+    const foreign = { [fileUploadQuestion.id]: [`https://example.com/storage/other-env/private/file.png`] };
+    await findAndDeleteUploadedFilesInResponse(foreign, [fileUploadQuestion], environmentId);
+    expect(deleteFile).not.toHaveBeenCalled();
   });
 });

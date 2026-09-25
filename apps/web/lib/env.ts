@@ -242,6 +242,12 @@ const parsedEnv = createEnv({
     PROMETHEUS_EXPORTER_PORT: z.string().optional(),
     PROMETHEUS_ENABLED: z.enum(["1", "0"]).optional(),
     USER_MANAGEMENT_MINIMUM_ROLE: z.enum(["owner", "manager", "disabled"]).optional(),
+    // Reverse proxies in front of the app whose X-Forwarded-For entries can be believed (default 1).
+    // "" is preprocessed to undefined because z.coerce.number() turns it into 0 (trust nothing).
+    TRUSTED_PROXY_HOP_COUNT: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().min(0).max(10).optional()
+    ),
     AUDIT_LOG_ENABLED: z.enum(["1", "0"]).optional(),
     AUDIT_LOG_GET_USER_IP: z.enum(["1", "0"]).optional(),
     SESSION_MAX_AGE: z
@@ -359,6 +365,7 @@ const parsedEnv = createEnv({
     PROMETHEUS_ENABLED: process.env.PROMETHEUS_ENABLED,
     PROMETHEUS_EXPORTER_PORT: process.env.PROMETHEUS_EXPORTER_PORT,
     USER_MANAGEMENT_MINIMUM_ROLE: process.env.USER_MANAGEMENT_MINIMUM_ROLE,
+    TRUSTED_PROXY_HOP_COUNT: process.env.TRUSTED_PROXY_HOP_COUNT,
     AUDIT_LOG_ENABLED: process.env.AUDIT_LOG_ENABLED,
     AUDIT_LOG_GET_USER_IP: process.env.AUDIT_LOG_GET_USER_IP,
     SESSION_MAX_AGE: process.env.SESSION_MAX_AGE,

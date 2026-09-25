@@ -1,4 +1,5 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@formbricks/database";
 import { logger } from "@formbricks/logger";
 import { ENCRYPTION_KEY, NEXTAUTH_SECRET } from "@/lib/constants";
@@ -38,6 +39,28 @@ export const createTokenForLinkSurvey = (surveyId: string, userEmail: string): s
   return jwt.sign({ email: encryptedEmail, surveyId }, NEXTAUTH_SECRET);
 };
 
+const EMAIL_CHANGE_PURPOSE = "email_change";
+
+/**
+ * Binds an email-change token to the credential state it was issued under (ENG-2106): an HMAC over the
+ * current login email and password hash. A password reset/change or another email change re-keys it,
+ * so a token parked by someone who briefly had the account stops working. bcrypt salts every hash, so
+ * even re-setting the same password rotates it. Fails closed for users without a password.
+ */
+const getEmailChangeFingerprint = async (userId: string): Promise<string> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, password: true },
+  });
+  if (!user?.password) {
+    throw new Error("Email change is not available for this account");
+  }
+
+  return createHmac("sha256", NEXTAUTH_SECRET!)
+    .update(`${EMAIL_CHANGE_PURPOSE}:${user.email}:${user.password}`)
+    .digest("hex");
+};
+
 export const verifyEmailChangeToken = async (token: string): Promise<{ id: string; email: string }> => {
   if (!NEXTAUTH_SECRET) {
     throw new Error("NEXTAUTH_SECRET is not set");
@@ -50,9 +73,11 @@ export const verifyEmailChangeToken = async (token: string): Promise<{ id: strin
   const payload = jwt.verify(token, NEXTAUTH_SECRET, { algorithms: ["HS256"] }) as {
     id: string;
     email: string;
+    purpose?: string;
+    fingerprint?: string;
   };
 
-  if (!payload?.id || !payload?.email) {
+  if (!payload?.id || !payload?.email || payload.purpose !== EMAIL_CHANGE_PURPOSE || !payload.fingerprint) {
     throw new Error("Token is invalid or missing required fields");
   }
 
@@ -60,13 +85,19 @@ export const verifyEmailChangeToken = async (token: string): Promise<{ id: strin
   const decryptedId = decryptWithFallback(payload.id, ENCRYPTION_KEY);
   const decryptedEmail = decryptWithFallback(payload.email, ENCRYPTION_KEY);
 
+  const expected = Buffer.from(await getEmailChangeFingerprint(decryptedId));
+  const received = Buffer.from(payload.fingerprint);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    throw new Error("Token is no longer valid");
+  }
+
   return {
     id: decryptedId,
     email: decryptedEmail,
   };
 };
 
-export const createEmailChangeToken = (userId: string, email: string): string => {
+export const createEmailChangeToken = async (userId: string, email: string): Promise<string> => {
   if (!NEXTAUTH_SECRET) {
     throw new Error("NEXTAUTH_SECRET is not set");
   }
@@ -81,6 +112,8 @@ export const createEmailChangeToken = (userId: string, email: string): string =>
   const payload = {
     id: encryptedUserId,
     email: encryptedEmail,
+    purpose: EMAIL_CHANGE_PURPOSE,
+    fingerprint: await getEmailChangeFingerprint(userId),
   };
 
   return jwt.sign(payload, NEXTAUTH_SECRET, {

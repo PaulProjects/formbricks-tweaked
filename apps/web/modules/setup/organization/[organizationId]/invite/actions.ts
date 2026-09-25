@@ -29,9 +29,11 @@ export const inviteOrganizationMemberAction = authenticatedActionClient
         userId: ctx.user.id,
         organizationId: parsedInput.organizationId,
         access: [
+          // Owner-only: this path always creates an `owner` invite, so allowing managers here would
+          // let them mint owners (upstream f2a6f2ad5 / ENG-2169).
           {
             type: "organization",
-            roles: ["owner", "manager"],
+            roles: ["owner"],
           },
         ],
       });

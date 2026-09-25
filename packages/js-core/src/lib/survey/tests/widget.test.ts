@@ -72,6 +72,7 @@ describe("widget-file", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     document.body.innerHTML = "";
+    // @ts-expect-error -- cleaning up mock
     delete window.formbricksSurveys;
 
     getInstanceConfigMock = vi.spyOn(Config, "getInstance");

@@ -30,7 +30,7 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       store.setSurvey(mockSurvey);
       expect(store.getSurvey()).toBe(mockSurvey);
@@ -43,7 +43,7 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       store.subscribe(listener);
       store.setSurvey(mockSurvey);
@@ -57,7 +57,7 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       store.setSurvey(mockSurvey);
       store.subscribe(listener);
@@ -73,7 +73,7 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       store.setSurvey(mockSurvey);
       store.subscribe(listener);
@@ -99,14 +99,14 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       const unsubscribe = store.subscribe(listener);
       store.setSurvey(mockSurvey);
       expect(listener).toHaveBeenCalledTimes(1);
 
       unsubscribe();
-      store.setSurvey({ ...mockSurvey, name: "Updated Survey" } as TEnvironmentStateSurvey);
+      store.setSurvey({ ...mockSurvey, name: "Updated Survey" } as unknown as TEnvironmentStateSurvey);
       expect(listener).toHaveBeenCalledTimes(1); // Still 1, not called after unsubscribe
     });
 
@@ -116,7 +116,7 @@ describe("SurveyStore", () => {
       const mockSurvey: TEnvironmentStateSurvey = {
         id: mockSurveyId,
         name: mockSurveyName,
-      } as TEnvironmentStateSurvey;
+      } as unknown as TEnvironmentStateSurvey;
 
       store.subscribe(listener1);
       store.subscribe(listener2);

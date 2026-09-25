@@ -270,6 +270,11 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
       expect(result).toBeNull();
     });
 
+    test("should reject a primary-secret token without a surveyId claim", () => {
+      const token = createEmailToken(mockUser.email);
+      expect(verifyTokenForLinkSurvey(token, "test-survey-id")).toBeNull();
+    });
+
     test("should return null if NEXTAUTH_SECRET is not set", async () => {
       const constants = await import("@/lib/constants");
       const originalSecret = (constants as any).NEXTAUTH_SECRET;

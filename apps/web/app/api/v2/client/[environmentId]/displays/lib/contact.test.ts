@@ -35,11 +35,11 @@ describe("doesContactExist", () => {
       environmentId: "test-env",
     });
 
-    const result = await doesContactExist(contactId);
+    const result = await doesContactExist(contactId, "env-1");
 
     expect(result).toBe(true);
     expect(prisma.contact.findFirst).toHaveBeenCalledWith({
-      where: { id: contactId },
+      where: { id: contactId, environmentId: "env-1" },
       select: { id: true },
     });
   });
@@ -47,11 +47,11 @@ describe("doesContactExist", () => {
   test("should return false if contact does not exist", async () => {
     vi.mocked(prisma.contact.findFirst).mockResolvedValue(null);
 
-    const result = await doesContactExist(contactId);
+    const result = await doesContactExist(contactId, "env-1");
 
     expect(result).toBe(false);
     expect(prisma.contact.findFirst).toHaveBeenCalledWith({
-      where: { id: contactId },
+      where: { id: contactId, environmentId: "env-1" },
       select: { id: true },
     });
   });

@@ -41,6 +41,8 @@ export const getInvite = reactCache(async (inviteId: string): Promise<InviteWith
         organizationId: true,
         role: true,
         teamIds: true,
+        email: true,
+        expiresAt: true,
         creator: {
           select: {
             name: true,

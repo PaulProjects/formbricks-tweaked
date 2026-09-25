@@ -18,6 +18,7 @@ import { createProjectAction } from "@/app/(app)/environments/[environmentId]/ac
 import { previewSurvey } from "@/app/lib/templates";
 import { FORMBRICKS_SURVEYS_FILTERS_KEY_LS } from "@/lib/localStorage";
 import { buildStylingFromBrandColor } from "@/lib/styling/constants";
+import { toJsEnvironmentStateSurvey } from "@/lib/survey/client-utils";
 import { getFormattedErrorMessage } from "@/lib/utils/helper";
 import { CreateTeamModal } from "@/modules/teams-stub/components/create-team-modal";
 import { TOrganizationTeam } from "@/modules/teams-stub/types/team";
@@ -242,7 +243,7 @@ export const ProjectSettings = ({
         <SurveyInline
           appUrl={publicDomain}
           isPreviewMode={true}
-          survey={previewSurvey(projectName || t("common.my_product"), t)}
+          survey={toJsEnvironmentStateSurvey(previewSurvey(projectName || t("common.my_product"), t))}
           styling={previewStyling}
           isBrandingEnabled={false}
           languageCode="default"

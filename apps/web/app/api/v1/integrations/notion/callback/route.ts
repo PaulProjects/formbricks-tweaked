@@ -12,6 +12,11 @@ import {
 import { symmetricEncrypt } from "@/lib/crypto";
 import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
+import {
+  IntegrationOAuthStateError,
+  consumeIntegrationOAuthState,
+  getSafeOAuthCallbackError,
+} from "@/lib/oauth/integration-state";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 
@@ -23,20 +28,43 @@ export const GET = withV1ApiWrapper({
 
     const url = req.url;
     const queryParams = new URLSearchParams(url.split("?")[1]); // Split the URL and get the query parameters
-    const environmentId = queryParams.get("state"); // Get the value of the 'state' parameter
+    const state = queryParams.get("state");
     const code = queryParams.get("code");
     const error = queryParams.get("error");
 
-    if (!environmentId) {
-      return {
-        response: responses.badRequestResponse("Invalid environmentId"),
-      };
+    let oauthState;
+    try {
+      oauthState = await consumeIntegrationOAuthState({
+        provider: "notion",
+        userId: authentication.user.id,
+        state,
+      });
+    } catch (err) {
+      if (err instanceof IntegrationOAuthStateError) {
+        return {
+          response: responses.badRequestResponse("Invalid OAuth state"),
+        };
+      }
+
+      throw err;
     }
+
+    const environmentId = oauthState.environmentId;
 
     const canUserAccessEnvironment = await hasUserEnvironmentAccess(authentication.user.id, environmentId);
     if (!canUserAccessEnvironment) {
       return {
         response: responses.unauthorizedResponse(),
+      };
+    }
+
+    const redirectUrl = new URL(`/environments/${environmentId}/workspace/integrations/notion`, WEBAPP_URL);
+    const safeError = getSafeOAuthCallbackError(error);
+
+    if (!code && safeError) {
+      redirectUrl.searchParams.set("error", safeError);
+      return {
+        response: Response.redirect(redirectUrl),
       };
     }
 
@@ -110,17 +138,9 @@ export const GET = withV1ApiWrapper({
         }
 
         return {
-          response: Response.redirect(
-            `${WEBAPP_URL}/environments/${environmentId}/workspace/integrations/notion`
-          ),
+          response: Response.redirect(redirectUrl),
         };
       }
-    } else if (error) {
-      return {
-        response: Response.redirect(
-          `${WEBAPP_URL}/environments/${environmentId}/workspace/integrations/notion?error=${error}`
-        ),
-      };
     }
 
     return {

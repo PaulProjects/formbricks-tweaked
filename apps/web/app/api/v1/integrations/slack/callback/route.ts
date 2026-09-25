@@ -9,6 +9,11 @@ import { withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_REDIRECT_URI, WEBAPP_URL } from "@/lib/constants";
 import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
+import {
+  IntegrationOAuthStateError,
+  consumeIntegrationOAuthState,
+  getSafeOAuthCallbackError,
+} from "@/lib/oauth/integration-state";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 
@@ -20,20 +25,43 @@ export const GET = withV1ApiWrapper({
 
     const url = req.url;
     const queryParams = new URLSearchParams(url.split("?")[1]); // Split the URL and get the query parameters
-    const environmentId = queryParams.get("state"); // Get the value of the 'state' parameter
+    const state = queryParams.get("state");
     const code = queryParams.get("code");
     const error = queryParams.get("error");
 
-    if (!environmentId) {
-      return {
-        response: responses.badRequestResponse("Invalid environmentId"),
-      };
+    let oauthState;
+    try {
+      oauthState = await consumeIntegrationOAuthState({
+        provider: "slack",
+        userId: authentication.user.id,
+        state,
+      });
+    } catch (err) {
+      if (err instanceof IntegrationOAuthStateError) {
+        return {
+          response: responses.badRequestResponse("Invalid OAuth state"),
+        };
+      }
+
+      throw err;
     }
+
+    const environmentId = oauthState.environmentId;
 
     const canUserAccessEnvironment = await hasUserEnvironmentAccess(authentication.user.id, environmentId);
     if (!canUserAccessEnvironment) {
       return {
         response: responses.unauthorizedResponse(),
+      };
+    }
+
+    const redirectUrl = new URL(`/environments/${environmentId}/workspace/integrations/slack`, WEBAPP_URL);
+    const safeError = getSafeOAuthCallbackError(error);
+
+    if (!code && safeError) {
+      redirectUrl.searchParams.set("error", safeError);
+      return {
+        response: Response.redirect(redirectUrl),
       };
     }
 
@@ -118,17 +146,9 @@ export const GET = withV1ApiWrapper({
         }
 
         return {
-          response: Response.redirect(
-            `${WEBAPP_URL}/environments/${environmentId}/workspace/integrations/slack`
-          ),
+          response: Response.redirect(redirectUrl),
         };
       }
-    } else if (error) {
-      return {
-        response: Response.redirect(
-          `${WEBAPP_URL}/environments/${environmentId}/workspace/integrations/slack?error=${error}`
-        ),
-      };
     }
 
     return {

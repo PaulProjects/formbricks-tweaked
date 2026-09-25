@@ -2,6 +2,7 @@ import { responses } from "@/app/lib/api/response";
 import { withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET } from "@/lib/constants";
 import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { createIntegrationOAuthState } from "@/lib/oauth/integration-state";
 
 export const GET = withV1ApiWrapper({
   handler: async ({ req, authentication }) => {
@@ -38,8 +39,16 @@ export const GET = withV1ApiWrapper({
         response: responses.internalServerErrorResponse("Slack auth url is missing"),
       };
 
+    const state = await createIntegrationOAuthState({
+      provider: "slack",
+      userId: authentication.user.id,
+      environmentId,
+    });
+    const authUrl = new URL(SLACK_AUTH_URL);
+    authUrl.searchParams.set("state", state);
+
     return {
-      response: responses.successResponse({ authUrl: `${SLACK_AUTH_URL}&state=${environmentId}` }),
+      response: responses.successResponse({ authUrl: authUrl.toString() }),
     };
   },
 });

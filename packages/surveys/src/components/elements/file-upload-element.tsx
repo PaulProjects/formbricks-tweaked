@@ -258,6 +258,7 @@ export function FileUploadElement({
             {
               allowedFileExtensions: element.allowedFileExtensions,
               surveyId,
+              elementId: element.id,
             }
           );
           return { name: file.name, url: uploadedUrl };

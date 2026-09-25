@@ -11,7 +11,7 @@ import { getSurvey } from "@/lib/survey/service";
 import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/api/lib/validation";
 import { validateOtherOptionLengthForMultipleChoice } from "@/modules/api/v2/lib/element";
 import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
-import { validateFileUploads } from "@/modules/storage/utils";
+import { validateClientFileUploads } from "@/modules/storage/utils";
 import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
 import { VERIFIED_EMAIL_RESPONSE_KEY } from "@/modules/survey/link/lib/verify-email-gate";
 import { updateResponseWithQuotaEvaluation } from "./response";
@@ -136,7 +136,15 @@ const validateUpdateRequest = (
     };
   }
 
-  if (!validateFileUploads(responseUpdateInput.data, survey.questions)) {
+  if (
+    !validateClientFileUploads({
+      data: responseUpdateInput.data,
+      environmentId: survey.environmentId,
+      surveyId: survey.id,
+      blocks: survey.blocks,
+      questions: survey.questions,
+    })
+  ) {
     return {
       response: responses.badRequestResponse("Invalid file upload response", undefined, true),
     };

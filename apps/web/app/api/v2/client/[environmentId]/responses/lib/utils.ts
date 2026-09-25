@@ -8,6 +8,7 @@ import { responses } from "@/app/lib/api/response";
 import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { getIsSpamProtectionEnabled } from "@/modules/license-stub/lib/utils";
 import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
+import { validateClientFileUploads } from "@/modules/storage/utils";
 import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 
 export const RECAPTCHA_VERIFICATION_ERROR_CODE = "recaptcha_verification_failed";
@@ -32,6 +33,19 @@ export const checkSurveyValidity = async (
       return singleUseValidationResult.response;
     }
     responseInput.singleUseId = singleUseValidationResult.singleUseId;
+  }
+
+  // File-upload answers must be private uploads made for this environment, survey and element (#8044).
+  if (
+    !validateClientFileUploads({
+      data: responseInput.data,
+      environmentId,
+      surveyId: survey.id,
+      blocks: survey.blocks,
+      questions: survey.questions,
+    })
+  ) {
+    return responses.badRequestResponse("Invalid file upload response", undefined, true);
   }
 
   // Email verification must be enforced here, not only in the page renderer: this endpoint is public.

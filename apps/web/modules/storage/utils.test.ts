@@ -7,6 +7,8 @@ import { TSurveyQuestion } from "@formbricks/types/surveys/types";
 import {
   hasStoragePathTraversal,
   isAllowedFileExtension,
+  parseStorageFileUrl,
+  validateClientFileUploads,
   isValidImageFile,
   resolveStorageUrl,
   resolveStorageUrlAuto,
@@ -360,7 +362,11 @@ describe("storage utils", () => {
         },
       ] as unknown as TSurveyBlock[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report.pdf", blocks })).toEqual({ ok: true });
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "element1", blocks })
+      ).toEqual({
+        ok: true,
+      });
     });
 
     test("should allow a matching extension from a legacy file upload question", () => {
@@ -372,7 +378,9 @@ describe("storage utils", () => {
         },
       ] as TSurveyQuestion[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "image.png", questions })).toEqual({ ok: true });
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "image.png", elementId: "question1", questions })
+      ).toEqual({ ok: true });
     });
 
     test("should allow any globally safe extension when a file upload has no survey restriction", () => {
@@ -389,7 +397,11 @@ describe("storage utils", () => {
         },
       ] as unknown as TSurveyBlock[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report.pdf", blocks })).toEqual({ ok: true });
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "element1", blocks })
+      ).toEqual({
+        ok: true,
+      });
     });
 
     test("should reject surveys without file upload blocks or questions", () => {
@@ -412,9 +424,11 @@ describe("storage utils", () => {
         },
       ] as TSurveyQuestion[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report.pdf", blocks, questions })).toEqual({
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "question1", blocks, questions })
+      ).toEqual({
         ok: false,
-        reason: "no_file_upload_question",
+        reason: "no_file_upload_element",
       });
     });
 
@@ -438,7 +452,9 @@ describe("storage utils", () => {
         },
       ] as unknown as TSurveyBlock[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report.pdf", blocks })).toEqual({
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "element2", blocks })
+      ).toEqual({
         ok: false,
         reason: "file_extension_not_allowed",
       });
@@ -464,7 +480,11 @@ describe("storage utils", () => {
         },
       ] as unknown as TSurveyBlock[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report.pdf", blocks })).toEqual({ ok: true });
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "element2", blocks })
+      ).toEqual({
+        ok: true,
+      });
     });
 
     test("should reject files without a globally safe extension even when the survey has an unrestricted upload", () => {
@@ -475,14 +495,147 @@ describe("storage utils", () => {
         },
       ] as TSurveyQuestion[];
 
-      expect(validateSurveyAllowsFileUpload({ fileName: "report", questions })).toEqual({
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report", elementId: "question1", questions })
+      ).toEqual({
         ok: false,
         reason: "file_extension_not_allowed",
       });
-      expect(validateSurveyAllowsFileUpload({ fileName: "malware.exe", questions })).toEqual({
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "malware.exe", elementId: "question1", questions })
+      ).toEqual({
         ok: false,
         reason: "file_extension_not_allowed",
       });
+    });
+
+    test("should reject an element id that is not the file upload element", () => {
+      const blocks = [
+        {
+          id: "block1",
+          name: "Block 1",
+          elements: [
+            {
+              id: "element1",
+              type: "fileUpload" as const,
+              allowedFileExtensions: ["pdf"],
+            },
+          ],
+        },
+      ] as unknown as TSurveyBlock[];
+
+      expect(
+        validateSurveyAllowsFileUpload({ fileName: "report.pdf", elementId: "element2", blocks })
+      ).toEqual({
+        ok: false,
+        reason: "file_upload_element_not_found",
+      });
+    });
+  });
+
+  describe("validateClientFileUploads", () => {
+    const environmentId = "clxenvironment123";
+    const surveyId = "clxsurvey123";
+    const elementId = "file_element";
+    const blocks = [
+      {
+        id: "block1",
+        name: "Block 1",
+        elements: [
+          {
+            id: elementId,
+            type: "fileUpload" as const,
+            allowedFileExtensions: ["pdf"],
+          },
+        ],
+      },
+    ] as unknown as TSurveyBlock[];
+
+    test("should accept scoped private storage URLs for the matching survey and element", () => {
+      const responseData = {
+        [elementId]: [
+          `/storage/${environmentId}/private/surveys/${surveyId}/elements/${elementId}/report--fid--abc.pdf`,
+        ],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(true);
+    });
+
+    test("should reject unscoped legacy storage URLs for new client submissions", () => {
+      const responseData = {
+        [elementId]: [`/storage/${environmentId}/private/report--fid--abc.pdf`],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(false);
+    });
+
+    test("should reject scoped URLs for a different survey", () => {
+      const responseData = {
+        [elementId]: [
+          `/storage/${environmentId}/private/surveys/otherSurvey/elements/${elementId}/report--fid--abc.pdf`,
+        ],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(false);
+    });
+
+    test("should reject scoped URLs for a different element", () => {
+      const responseData = {
+        [elementId]: [
+          `/storage/${environmentId}/private/surveys/${surveyId}/elements/otherElement/report--fid--abc.pdf`,
+        ],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(false);
+    });
+
+    test("should reject external URLs", () => {
+      const responseData = {
+        [elementId]: ["https://example.com/report--fid--abc.pdf"],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(false);
+    });
+
+    test("should reject file extensions not allowed by the matching upload element", () => {
+      const responseData = {
+        [elementId]: [
+          `/storage/${environmentId}/private/surveys/${surveyId}/elements/${elementId}/image--fid--abc.png`,
+        ],
+      };
+
+      expect(validateClientFileUploads({ data: responseData, environmentId, surveyId, blocks })).toBe(false);
+    });
+  });
+
+  describe("parseStorageFileUrl", () => {
+    test("should parse nested relative storage URLs", () => {
+      expect(
+        parseStorageFileUrl(
+          "/storage/environment-123/private/surveys/survey-123/elements/element-123/report.pdf"
+        )
+      ).toEqual({
+        storageId: "environment-123",
+        accessType: "private",
+        fileName: "surveys/survey-123/elements/element-123/report.pdf",
+      });
+    });
+
+    test("should parse absolute storage URLs", () => {
+      expect(parseStorageFileUrl("https://example.com/storage/environment-123/public/report.pdf")).toEqual({
+        storageId: "environment-123",
+        accessType: "public",
+        fileName: "report.pdf",
+      });
+    });
+
+    test.each([
+      "https://example.com/not-storage/environment-123/private/report.pdf",
+      "/storage/environment-123/internal/report.pdf",
+      "/storage/environment-123/private",
+      "not a url",
+    ])("should reject invalid storage URL %s", (fileUrl) => {
+      expect(parseStorageFileUrl(fileUrl)).toBeNull();
     });
   });
 

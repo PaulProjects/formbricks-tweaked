@@ -14,6 +14,7 @@ import {
   Text,
   render,
 } from "@formbricks/email";
+import { isSafeLinkUrl } from "@formbricks/types/common";
 import { TSurveyCTAElement, TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import { type TSurvey, type TSurveyStyling } from "@formbricks/types/surveys/types";
 import { cn } from "@/lib/cn";
@@ -194,18 +195,22 @@ export async function PreviewEmailTemplate({
       return (
         <EmailTemplateWrapper styling={styling} surveyUrl={url}>
           <ElementHeader headline={headline} subheader={subheader} className="mr-8" />
-          {ctaElement.buttonExternal && ctaElement.ctaButtonLabel && ctaElement.buttonUrl && (
-            <Container className="mx-0 mt-4 flex max-w-none items-center justify-end">
-              <EmailButton
-                className="text-question-color flex items-center rounded-md border-0 bg-transparent px-3 py-3 text-base font-medium leading-4 no-underline shadow-none"
-                href={ctaElement.buttonUrl}>
-                <Text className="inline">
-                  {getLocalizedValue(ctaElement.ctaButtonLabel, defaultLanguageCode)}{" "}
-                </Text>
-                <ExternalLinkIcon className="ml-2 inline h-4 w-4" />
-              </EmailButton>
-            </Container>
-          )}
+          {/* The button URL is an editable survey field; drafts skip schema validation. */}
+          {ctaElement.buttonExternal &&
+            ctaElement.ctaButtonLabel &&
+            ctaElement.buttonUrl &&
+            isSafeLinkUrl(ctaElement.buttonUrl) && (
+              <Container className="mx-0 mt-4 flex max-w-none items-center justify-end">
+                <EmailButton
+                  className="text-question-color flex items-center rounded-md border-0 bg-transparent px-3 py-3 text-base font-medium leading-4 no-underline shadow-none"
+                  href={ctaElement.buttonUrl}>
+                  <Text className="inline">
+                    {getLocalizedValue(ctaElement.ctaButtonLabel, defaultLanguageCode)}{" "}
+                  </Text>
+                  <ExternalLinkIcon className="ml-2 inline h-4 w-4" />
+                </EmailButton>
+              </Container>
+            )}
           <EmailFooter t={t} />
         </EmailTemplateWrapper>
       );

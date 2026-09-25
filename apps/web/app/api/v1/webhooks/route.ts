@@ -5,6 +5,7 @@ import { responses } from "@/app/lib/api/response";
 import { transformErrorToDetails } from "@/app/lib/api/validator";
 import { THandlerParams, withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
+import { omitWebhookSecret } from "@/lib/utils/webhook-secret";
 
 export const GET = withV1ApiWrapper({
   handler: async ({ authentication }: THandlerParams) => {
@@ -18,7 +19,7 @@ export const GET = withV1ApiWrapper({
       );
       const webhooks = await getWebhooks(environmentIds);
       return {
-        response: responses.successResponse(webhooks),
+        response: responses.successResponse(webhooks.map(omitWebhookSecret)),
       };
     } catch (error) {
       if (error instanceof DatabaseError) {

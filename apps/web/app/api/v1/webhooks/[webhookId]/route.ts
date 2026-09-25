@@ -3,6 +3,7 @@ import { deleteWebhook, getWebhook } from "@/app/api/v1/webhooks/[webhookId]/lib
 import { responses } from "@/app/lib/api/response";
 import { THandlerParams, withV1ApiWrapper } from "@/app/lib/api/with-api-logging";
 import { hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
+import { omitWebhookSecret } from "@/lib/utils/webhook-secret";
 
 export const GET = withV1ApiWrapper({
   handler: async ({ props, authentication }: THandlerParams<{ params: Promise<{ webhookId: string }> }>) => {
@@ -24,7 +25,7 @@ export const GET = withV1ApiWrapper({
       };
     }
     return {
-      response: responses.successResponse(webhook),
+      response: responses.successResponse(omitWebhookSecret(webhook)),
     };
   },
 });
@@ -66,7 +67,7 @@ export const DELETE = withV1ApiWrapper({
     try {
       const deletedWebhook = await deleteWebhook(params.webhookId);
       return {
-        response: responses.successResponse(deletedWebhook),
+        response: responses.successResponse(omitWebhookSecret(deletedWebhook)),
       };
     } catch (e) {
       if (auditLog) {

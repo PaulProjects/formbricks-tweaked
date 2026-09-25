@@ -13,12 +13,16 @@ import { Result, err, ok } from "@formbricks/types/error-handlers";
 import { TAccessType } from "@formbricks/types/storage";
 import { sanitizeFileName } from "./utils";
 
+// Extra key segments (e.g. surveys/<id>/elements/<id>) must be plain identifiers.
+const SAFE_FILE_PATH_SEGMENT = /^[A-Za-z0-9_-]+$/;
+
 export const getSignedUrlForUpload = async (
   fileName: string,
   environmentId: string,
   fileType: string,
   accessType: TAccessType,
-  maxFileUploadSize: number = 1024 * 1024 * 10 // 10MB
+  maxFileUploadSize: number = 1024 * 1024 * 10, // 10MB
+  filePathSegments: string[] = []
 ): Promise<
   Result<
     {
@@ -39,12 +43,12 @@ export const getSignedUrlForUpload = async (
 
     const updatedFileName = `${fileNameWithoutExtension}--fid--${randomUUID()}.${fileExtension}`;
 
-    const signedUrlResult = await getSignedUploadUrl(
-      updatedFileName,
-      fileType,
-      `${environmentId}/${accessType}`,
-      maxFileUploadSize
-    );
+    if (filePathSegments.some((segment) => !SAFE_FILE_PATH_SEGMENT.test(segment))) {
+      return err({ code: StorageErrorCode.InvalidInput });
+    }
+
+    const filePath = [environmentId, accessType, ...filePathSegments].join("/");
+    const signedUrlResult = await getSignedUploadUrl(updatedFileName, fileType, filePath, maxFileUploadSize);
 
     if (!signedUrlResult.ok) {
       return signedUrlResult;
@@ -54,7 +58,10 @@ export const getSignedUrlForUpload = async (
     return ok({
       signedUrl: signedUrlResult.data.signedUrl,
       presignedFields: signedUrlResult.data.presignedFields,
-      fileUrl: `/storage/${environmentId}/${accessType}/${encodeURIComponent(updatedFileName)}`,
+      fileUrl: `/storage/${environmentId}/${accessType}/${[
+        ...filePathSegments.map((segment) => encodeURIComponent(segment)),
+        encodeURIComponent(updatedFileName),
+      ].join("/")}`,
     });
   } catch (error) {
     logger.error({ error }, "Error getting signed url for upload");

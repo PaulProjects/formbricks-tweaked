@@ -1,7 +1,7 @@
 import "server-only";
 import { StorageError, StorageErrorCode } from "@formbricks/storage";
 import { TResponseData } from "@formbricks/types/responses";
-import { TAllowedFileExtension, ZAllowedFileExtension } from "@formbricks/types/storage";
+import { type TAccessType, TAllowedFileExtension, ZAllowedFileExtension } from "@formbricks/types/storage";
 import { TSurveyBlock } from "@formbricks/types/surveys/blocks";
 import { TSurveyElementTypeEnum, TSurveyFileUploadElement } from "@formbricks/types/surveys/elements";
 import { TSurveyQuestion, TSurveyQuestionTypeEnum } from "@formbricks/types/surveys/types";
@@ -120,7 +120,7 @@ export type TSurveyFileUploadPermissionResult =
     }
   | {
       ok: false;
-      reason: "no_file_upload_question" | "file_extension_not_allowed";
+      reason: "no_file_upload_element" | "file_upload_element_not_found" | "file_extension_not_allowed";
     };
 
 const getAllowedFileExtensionFromFileName = (fileName: string): TAllowedFileExtension | null => {
@@ -132,50 +132,154 @@ const getAllowedFileExtensionFromFileName = (fileName: string): TAllowedFileExte
   return extensionValidation.success ? extensionValidation.data : null;
 };
 
-export const validateSurveyAllowsFileUpload = ({
-  fileName,
+const getSurveyFileUploadConfigs = ({
   blocks,
   questions,
 }: {
-  fileName: string;
   blocks?: TSurveyBlock[] | null;
   questions?: TSurveyQuestion[] | null;
-}): TSurveyFileUploadPermissionResult => {
-  const fileUploadConfigs = [
+}): TSurveyFileUploadElement[] =>
+  [
     ...(blocks ?? [])
       .flatMap((block) => block.elements)
       .filter((element) => element.type === TSurveyElementTypeEnum.FileUpload),
     ...(questions ?? []).filter((question) => question.type === TSurveyQuestionTypeEnum.FileUpload),
   ] as TSurveyFileUploadElement[];
 
+/** An upload must target an existing file-upload element and satisfy that element's extensions. */
+export const validateSurveyAllowsFileUpload = ({
+  fileName,
+  elementId,
+  blocks,
+  questions,
+}: {
+  fileName: string;
+  elementId: string;
+  blocks?: TSurveyBlock[] | null;
+  questions?: TSurveyQuestion[] | null;
+}): TSurveyFileUploadPermissionResult => {
+  const fileUploadConfigs = getSurveyFileUploadConfigs({ blocks, questions });
+
   if (fileUploadConfigs.length === 0) {
-    return {
-      ok: false,
-      reason: "no_file_upload_question",
-    };
+    return { ok: false, reason: "no_file_upload_element" };
+  }
+
+  const fileUploadConfig = fileUploadConfigs.find((config) => config.id === elementId);
+  if (!fileUploadConfig) {
+    return { ok: false, reason: "file_upload_element_not_found" };
   }
 
   const fileExtension = getAllowedFileExtensionFromFileName(fileName);
-
   if (!fileExtension) {
-    return {
-      ok: false,
-      reason: "file_extension_not_allowed",
-    };
+    return { ok: false, reason: "file_extension_not_allowed" };
   }
 
-  const isFileExtensionAllowed = fileUploadConfigs.some((fileUploadConfig) => {
-    const { allowedFileExtensions } = fileUploadConfig;
+  const { allowedFileExtensions } = fileUploadConfig;
+  const isFileExtensionAllowed =
+    allowedFileExtensions === undefined || allowedFileExtensions.includes(fileExtension);
 
-    return allowedFileExtensions === undefined || allowedFileExtensions.includes(fileExtension);
-  });
+  return isFileExtensionAllowed ? { ok: true } : { ok: false, reason: "file_extension_not_allowed" };
+};
 
-  return isFileExtensionAllowed
-    ? { ok: true }
-    : {
-        ok: false,
-        reason: "file_extension_not_allowed",
-      };
+type TParsedStorageFileUrl = {
+  storageId: string;
+  accessType: TAccessType;
+  fileName: string;
+};
+
+/** Parses relative (`/storage/...`) and absolute storage URLs; `fileName` may contain `/` (nested keys). */
+export const parseStorageFileUrl = (fileUrl: string): TParsedStorageFileUrl | null => {
+  let pathname: string;
+  try {
+    pathname = fileUrl.startsWith("/storage/") ? fileUrl : new URL(fileUrl).pathname;
+  } catch {
+    return null;
+  }
+
+  const pathWithoutSearch = pathname.split(/[?#]/)[0];
+  if (!pathWithoutSearch.startsWith("/storage/")) return null;
+
+  const [storageSegment, storageId, accessType, ...fileNameSegments] = pathWithoutSearch
+    .split("/")
+    .filter(Boolean);
+  const fileName = fileNameSegments.join("/");
+
+  if (
+    storageSegment !== "storage" ||
+    !storageId ||
+    !fileName ||
+    (accessType !== "private" && accessType !== "public")
+  ) {
+    return null;
+  }
+
+  return { storageId, accessType, fileName };
+};
+
+const isScopedPrivateUploadUrl = ({
+  fileUrl,
+  environmentId,
+  surveyId,
+  elementId,
+}: {
+  fileUrl: string;
+  environmentId: string;
+  surveyId: string;
+  elementId: string;
+}): boolean => {
+  if (!fileUrl.startsWith("/storage/")) return false;
+  const segments = fileUrl.split(/[?#]/)[0].split("/").filter(Boolean);
+  if (segments.length !== 8) return false;
+
+  const [storage, storageEnvId, accessType, surveys, storageSurveyId, elements, storageElementId, name] =
+    segments;
+
+  return (
+    storage === "storage" &&
+    storageEnvId === environmentId &&
+    accessType === "private" &&
+    surveys === "surveys" &&
+    storageSurveyId === surveyId &&
+    elements === "elements" &&
+    storageElementId === elementId &&
+    Boolean(name)
+  );
+};
+
+/**
+ * Public response endpoints: every file-upload answer must be a private upload made for this
+ * environment, survey and element (#8044), so a response cannot reference someone else's file.
+ */
+export const validateClientFileUploads = ({
+  data,
+  environmentId,
+  surveyId,
+  blocks,
+  questions,
+}: {
+  data?: TResponseData;
+  environmentId: string;
+  surveyId: string;
+  blocks?: TSurveyBlock[] | null;
+  questions?: TSurveyQuestion[] | null;
+}): boolean => {
+  if (!data) return true;
+
+  for (const fileUploadConfig of getSurveyFileUploadConfigs({ blocks, questions })) {
+    const fileUrls = data[fileUploadConfig.id];
+
+    if (fileUrls === undefined) continue;
+    if (!Array.isArray(fileUrls) || !fileUrls.every((url) => typeof url === "string")) return false;
+
+    for (const fileUrl of fileUrls) {
+      if (!validateSingleFile(fileUrl, fileUploadConfig.allowedFileExtensions)) return false;
+      if (!isScopedPrivateUploadUrl({ fileUrl, environmentId, surveyId, elementId: fileUploadConfig.id })) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 };
 
 export const isValidImageFile = (fileUrl: string): boolean => {

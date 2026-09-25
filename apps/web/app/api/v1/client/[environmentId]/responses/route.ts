@@ -18,7 +18,7 @@ import { getOrganizationIdFromEnvironmentId } from "@/lib/utils/helper";
 import { formatValidationErrorsForV1Api, validateResponseData } from "@/modules/api/lib/validation";
 import { getIsContactsEnabled } from "@/modules/license-stub/lib/utils";
 import { createQuotaFullObject } from "@/modules/quotas-stub/lib/helpers";
-import { validateFileUploads } from "@/modules/storage/utils";
+import { validateClientFileUploads } from "@/modules/storage/utils";
 import { verifyLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
 import { enforceVerifiedEmailGate } from "@/modules/survey/link/lib/verify-email-gate";
 import { createResponseWithQuotaEvaluation } from "./lib/response";
@@ -171,7 +171,15 @@ export const POST = withV1ApiWrapper({
       return { response: recaptchaErrorResponse };
     }
 
-    if (!validateFileUploads(responseInputData.data, survey.questions)) {
+    if (
+      !validateClientFileUploads({
+        data: responseInputData.data,
+        environmentId,
+        surveyId: survey.id,
+        blocks: survey.blocks,
+        questions: survey.questions,
+      })
+    ) {
       return {
         response: responses.badRequestResponse("Invalid file upload response"),
       };

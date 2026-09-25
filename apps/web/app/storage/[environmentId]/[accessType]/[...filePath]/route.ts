@@ -4,7 +4,7 @@ import { logger } from "@formbricks/logger";
 import { ZDeleteFileRequest, ZDownloadFileRequest } from "@formbricks/types/storage";
 import { responses } from "@/app/lib/api/response";
 import { transformErrorToDetails } from "@/app/lib/api/validator";
-import { authorizePrivateDownload } from "@/app/storage/[environmentId]/[accessType]/[fileName]/lib/auth";
+import { authorizePrivateDownload } from "@/app/storage/[environmentId]/[accessType]/[...filePath]/lib/auth";
 import { authOptions } from "@/modules/auth/lib/authOptions";
 import { applyRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
@@ -14,10 +14,12 @@ import { logFileDeletion } from "./lib/audit-logs";
 
 export const GET = async (
   request: NextRequest,
-  props: { params: Promise<{ environmentId: string; accessType: string; fileName: string }> }
+  props: { params: Promise<{ environmentId: string; accessType: string; filePath: string[] }> }
 ): Promise<Response> => {
-  const params = await props.params;
-  const paramValidation = ZDownloadFileRequest.safeParse(params);
+  const { filePath, ...params } = await props.params;
+  // Catch-all: uploads bound to a survey element live under surveys/<id>/elements/<id>/ (#8044);
+  // legacy single-segment file names keep working.
+  const paramValidation = ZDownloadFileRequest.safeParse({ ...params, fileName: filePath.join("/") });
 
   if (!paramValidation.success) {
     return responses.badRequestResponse(
@@ -68,10 +70,12 @@ export const GET = async (
 
 export const DELETE = async (
   request: NextRequest,
-  props: { params: Promise<{ environmentId: string; accessType: string; fileName: string }> }
+  props: { params: Promise<{ environmentId: string; accessType: string; filePath: string[] }> }
 ): Promise<Response> => {
-  const params = await props.params;
-  const paramValidation = ZDeleteFileRequest.safeParse(params);
+  const { filePath, ...params } = await props.params;
+  // Catch-all: uploads bound to a survey element live under surveys/<id>/elements/<id>/ (#8044);
+  // legacy single-segment file names keep working.
+  const paramValidation = ZDeleteFileRequest.safeParse({ ...params, fileName: filePath.join("/") });
   if (!paramValidation.success) {
     const errorDetails = transformErrorToDetails(paramValidation.error);
 

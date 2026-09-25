@@ -98,6 +98,7 @@ export const ZDeleteFileRequest = ZDownloadFileRequest;
 export const ZUploadFileConfig = z.object({
   allowedFileExtensions: z.array(z.string()).optional(),
   surveyId: z.string().optional(),
+  elementId: z.string().optional(),
 });
 
 export type TUploadFileConfig = z.infer<typeof ZUploadFileConfig>;
@@ -109,6 +110,15 @@ export const ZUploadPrivateFileRequest = z
     allowedFileExtensions: z.array(ZAllowedFileExtension).optional(),
     surveyId: z.cuid2(),
     environmentId: z.cuid2(),
+    // Uploads are bound to the file-upload element they answer (ENG: #8044); also used as a path segment.
+    elementId: z
+      .string()
+      .trim()
+      .min(1)
+      .regex(
+        /^[a-zA-Z0-9_-]+$/,
+        "Element id must contain only alphanumeric characters, hyphens, or underscores"
+      ),
   })
   .superRefine((data, ctx) => {
     refineFileUploadInput({

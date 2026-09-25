@@ -26,7 +26,7 @@ export const fileUploadQuestion: Survey["questions"][number] = {
 export const responseData: Response["data"] = {
   [openTextQuestion.id]: "Open Text Answer",
   [fileUploadQuestion.id]: [
-    `https://example.com/dummy/${environmentId}/private/file1.png`,
-    `https://example.com/dummy/${environmentId}/private/file2.pdf`,
+    `https://example.com/storage/${environmentId}/private/file1.png`,
+    `https://example.com/storage/${environmentId}/private/file2.pdf`,
   ],
 };

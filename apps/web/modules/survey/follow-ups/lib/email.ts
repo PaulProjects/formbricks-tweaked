@@ -45,18 +45,23 @@ export const sendFollowUpEmail = async ({
 
   const t = await getTranslate();
 
-  // Process body: parse recall tags and sanitize HTML
-  const processedBody = sanitizeHtml(parseRecallInfo(body, response.data, response.variables), {
-    allowedTags: ["p", "span", "b", "strong", "i", "em", "a", "br"],
-    allowedAttributes: {
-      a: ["href", "rel", "target"],
-      "*": ["dir", "class"],
-    },
-    allowedSchemes: ["http", "https"],
-    allowedSchemesByTag: {
-      a: ["http", "https"],
-    },
-  });
+  // Process body: parse recall tags and sanitize HTML. Recall values are HTML-escaped as they are
+  // substituted: the sanitizer allows author-written `<a href>`, so it could not tell that apart from an
+  // anchor a respondent injected through an open-text answer.
+  const processedBody = sanitizeHtml(
+    parseRecallInfo(body, response.data, response.variables, false, undefined, undefined, true),
+    {
+      allowedTags: ["p", "span", "b", "strong", "i", "em", "a", "br"],
+      allowedAttributes: {
+        a: ["href", "rel", "target"],
+        "*": ["dir", "class"],
+      },
+      allowedSchemes: ["http", "https"],
+      allowedSchemesByTag: {
+        a: ["http", "https"],
+      },
+    }
+  );
 
   // Process response data
   // Resolve relative storage URLs to absolute URLs for email rendering

@@ -220,13 +220,38 @@ export const headlineToRecall = (
   return text;
 };
 
+/** Matrix and address answers are records; `String()` would render them as "[object Object]". */
+const stringifyRecallValue = (value: TResponseDataValue): string => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  if (value) return Object.values(value).filter(Boolean).join(", ");
+  return "";
+};
+
+const HTML_ENTITIES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+
+const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => HTML_ENTITIES[char]);
+
+/**
+ * @param escapeValues HTML-escape each recalled value before splicing it in. Use it when the result goes
+ * into raw HTML (follow-up emails): a recalled answer is respondent data and must never become markup,
+ * and sanitizing the combined string afterwards cannot tell author markup from injected markup.
+ */
 export const parseRecallInfo = (
   text: string,
   responseData?: TResponseData,
   variables?: TResponseVariables,
   withSlash: boolean = false,
   locale: string = "en-US",
-  dateFormats?: TSurveyDateFormatMap
+  dateFormats?: TSurveyDateFormatMap,
+  escapeValues: boolean = false
 ) => {
   let modifiedText = text;
   const questionIds = responseData ? Object.keys(responseData) : [];
@@ -272,11 +297,13 @@ export const parseRecallInfo = (
       value = fallback;
     }
 
-    // Replace the recall tag with the value
+    const stringifiedValue = stringifyRecallValue(value);
+    const substitutedValue = escapeValues ? escapeHtml(stringifiedValue) : stringifiedValue;
+    // Replacer functions: `$&` and friends are special in replacement strings.
     if (withSlash) {
-      modifiedText = modifiedText.replace(recallInfo, "#/" + value + "\\#");
+      modifiedText = modifiedText.replace(recallInfo, () => `#/${substitutedValue}\\#`);
     } else {
-      modifiedText = modifiedText.replace(recallInfo, value as string);
+      modifiedText = modifiedText.replace(recallInfo, () => substitutedValue);
     }
   }
 

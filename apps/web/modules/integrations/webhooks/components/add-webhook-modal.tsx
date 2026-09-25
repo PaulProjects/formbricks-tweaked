@@ -74,6 +74,7 @@ export const AddWebhookModal = ({
       setHittingEndpoint(true);
       const testEndpointActionResult = await testEndpointAction({
         url: testEndpointInput,
+        environmentId,
         secret: webhookSecret,
       });
 

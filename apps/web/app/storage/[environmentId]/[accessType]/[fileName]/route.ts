@@ -9,7 +9,7 @@ import { authOptions } from "@/modules/auth/lib/authOptions";
 import { applyRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
 import { deleteFile, getFileStreamForDownload } from "@/modules/storage/service";
-import { getErrorResponseFromStorageError } from "@/modules/storage/utils";
+import { getErrorResponseFromStorageError, hasStoragePathTraversal } from "@/modules/storage/utils";
 import { logFileDeletion } from "./lib/audit-logs";
 
 export const GET = async (
@@ -28,6 +28,10 @@ export const GET = async (
   }
 
   const { environmentId, accessType, fileName } = paramValidation.data;
+
+  if (hasStoragePathTraversal(fileName)) {
+    return responses.badRequestResponse("Invalid file name", undefined, true);
+  }
 
   // check auth
   if (accessType === "private") {
@@ -81,6 +85,10 @@ export const DELETE = async (
   }
 
   const { environmentId, accessType, fileName } = paramValidation.data;
+
+  if (hasStoragePathTraversal(fileName)) {
+    return responses.badRequestResponse("Invalid file name", undefined, true);
+  }
 
   const session = await getServerSession(authOptions);
 

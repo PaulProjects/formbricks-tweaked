@@ -275,3 +275,23 @@ export const resolveStorageUrlsInObject = <T>(obj: T): T => {
 
   return result as T;
 };
+
+const safeDecode = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+/**
+ * True when a storage file name contains `.`/`..` path segments, raw or after one or two decodes (the
+ * download path decodes twice). Keys are built as `${environmentId}/${accessType}/${fileName}`, so such
+ * segments could name an object outside that prefix on a backend or proxy that normalizes paths.
+ */
+export const hasStoragePathTraversal = (fileName: string): boolean => {
+  const once = safeDecode(fileName);
+  return [fileName, once, safeDecode(once)].some((value) =>
+    value.split(/[\\/]/).some((segment) => segment === ".." || segment === ".")
+  );
+};

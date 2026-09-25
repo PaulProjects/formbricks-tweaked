@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { createHmac } from "node:crypto";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { prisma } from "@formbricks/database";
 import * as crypto from "@/lib/crypto";
@@ -102,7 +103,10 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
   const mockUser = {
     id: "test-user-id",
     email: "test@example.com",
+    password: "hashed-password",
   };
+  const emailChangeFingerprint = (email = mockUser.email, password = mockUser.password) =>
+    createHmac("sha256", TEST_NEXTAUTH_SECRET).update(`email_change:${email}:${password}`).digest("hex");
 
   let mockSymmetricEncrypt: any;
   let mockSymmetricDecrypt: any;
@@ -186,8 +190,8 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
   });
 
   describe("createEmailChangeToken", () => {
-    test("should create a valid email change token with 1 day expiration", () => {
-      const token = createEmailChangeToken(mockUser.id, mockUser.email);
+    test("should create a valid email change token with 1 day expiration", async () => {
+      const token = await createEmailChangeToken(mockUser.id, mockUser.email);
       expect(token).toBeDefined();
       expect(mockSymmetricEncrypt).toHaveBeenCalledWith(mockUser.id, TEST_ENCRYPTION_KEY);
       expect(mockSymmetricEncrypt).toHaveBeenCalledWith(mockUser.email, TEST_ENCRYPTION_KEY);
@@ -200,7 +204,7 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
     });
 
     test("should throw error if NEXTAUTH_SECRET or ENCRYPTION_KEY is not set", async () => {
-      await testMissingSecretsError(createEmailChangeToken, [mockUser.id, mockUser.email]);
+      await testMissingSecretsError(createEmailChangeToken, [mockUser.id, mockUser.email], { isAsync: true });
     });
   });
 
@@ -531,9 +535,15 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
     test("should verify and decrypt valid email change token", async () => {
       const userId = "test-user-id";
       const email = "test@example.com";
-      const token = createEmailChangeToken(userId, email);
+      const token = await createEmailChangeToken(userId, email);
       const result = await verifyEmailChangeToken(token);
       expect(result).toEqual({ id: userId, email });
+    });
+
+    test("should reject a token after the password changed", async () => {
+      const token = await createEmailChangeToken(mockUser.id, "new@example.com");
+      (prisma.user.findUnique as any).mockResolvedValue({ ...mockUser, password: "rotated-hash" });
+      await expect(verifyEmailChangeToken(token)).rejects.toThrow("Token is no longer valid");
     });
 
     test("should throw error if NEXTAUTH_SECRET or ENCRYPTION_KEY is not set", async () => {
@@ -561,15 +571,11 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
       );
     });
 
-    test("should return original id/email if decryption fails", async () => {
-      mockSymmetricDecrypt.mockImplementation(() => {
-        throw new Error("Decryption failed");
-      });
-
-      const payload = { id: "plain-id", email: "plain@example.com" };
-      const token = jwt.sign(payload, TEST_NEXTAUTH_SECRET);
-      const result = await verifyEmailChangeToken(token);
-      expect(result).toEqual(payload);
+    test("should reject legacy tokens without purpose and fingerprint", async () => {
+      const token = jwt.sign({ id: "plain-id", email: "plain@example.com" }, TEST_NEXTAUTH_SECRET);
+      await expect(verifyEmailChangeToken(token)).rejects.toThrow(
+        "Token is invalid or missing required fields"
+      );
     });
 
     test("should throw error for token with wrong signature", async () => {
@@ -896,6 +902,8 @@ describe("JWT Functions - Comprehensive Security Tests", () => {
           {
             id: "encrypted_test-id",
             email: "plain-email@example.com",
+            purpose: "email_change",
+            fingerprint: emailChangeFingerprint(),
           },
           TEST_NEXTAUTH_SECRET
         );

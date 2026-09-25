@@ -19,15 +19,16 @@ export const ZStorageUrl = z.string().refine(
     }
     // Otherwise validate as URL
     try {
-      // Using void to satisfy ESLint "no-new" rule while still validating the URL
-      void new URL(val);
-      return true;
+      // Constrain the scheme, not just parseability: these URLs are rendered into `src`/`href`, and
+      // `new URL()` accepts `javascript:`, `data:` and `vbscript:` (stored XSS).
+      const parsed = new URL(val);
+      return parsed.protocol === "https:" || parsed.protocol === "http:";
     } catch {
       return false;
     }
   },
   {
-    error: "Must be a valid URL or a relative storage path (/storage/...)",
+    error: "Must be a valid http(s) URL or a relative storage path (/storage/...)",
   }
 );
 

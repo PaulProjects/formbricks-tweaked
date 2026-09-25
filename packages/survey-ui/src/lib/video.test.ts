@@ -1,5 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { checkForLoomUrl, checkForVimeoUrl, checkForYoutubeUrl, convertToEmbedUrl } from "./video";
+import {
+  checkForLoomUrl,
+  checkForVimeoUrl,
+  checkForYoutubeUrl,
+  convertToEmbedUrl,
+  isSafeMediaUrl,
+} from "./video";
 
 describe("checkForYoutubeUrl", () => {
   test("returns true for valid YouTube URLs with https", () => {
@@ -170,5 +176,20 @@ describe("convertToEmbedUrl", () => {
       expect(convertToEmbedUrl("not-a-url")).toBeUndefined();
       expect(convertToEmbedUrl("")).toBeUndefined();
     });
+  });
+});
+
+describe("isSafeMediaUrl", () => {
+  test("allows http(s) and single-slash relative paths", () => {
+    expect(isSafeMediaUrl("https://example.com/a.png")).toBe(true);
+    expect(isSafeMediaUrl("http://example.com/a.png")).toBe(true);
+    expect(isSafeMediaUrl("/storage/env/public/a.png")).toBe(true);
+  });
+
+  test("rejects script-capable schemes and protocol-relative URLs", () => {
+    expect(isSafeMediaUrl("javascript:alert(1)")).toBe(false);
+    expect(isSafeMediaUrl("data:text/html,<script>alert(1)</script>")).toBe(false);
+    expect(isSafeMediaUrl("//evil.example/a.png")).toBe(false);
+    expect(isSafeMediaUrl("/\\evil.example/a.png")).toBe(false);
   });
 });

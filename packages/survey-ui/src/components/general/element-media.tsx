@@ -1,7 +1,13 @@
 import { Download, ExternalLink } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { checkForLoomUrl, checkForVimeoUrl, checkForYoutubeUrl, convertToEmbedUrl } from "@/lib/video";
+import {
+  checkForLoomUrl,
+  checkForVimeoUrl,
+  checkForYoutubeUrl,
+  convertToEmbedUrl,
+  isSafeMediaUrl,
+} from "@/lib/video";
 
 //Function to add extra params to videoUrls in order to reduce video controls
 const getVideoUrlWithParams = (videoUrl: string): string => {
@@ -23,7 +29,14 @@ interface ElementMediaProps {
   altText?: string;
 }
 
-function ElementMedia({ imgUrl, videoUrl, altText = "Image" }: Readonly<ElementMediaProps>): React.ReactNode {
+function ElementMedia({
+  imgUrl: rawImgUrl,
+  videoUrl: rawVideoUrl,
+  altText = "Image",
+}: Readonly<ElementMediaProps>): React.ReactNode {
+  // Stored rows may predate the http(s)-only ZStorageUrl check; never render an unsafe scheme.
+  const imgUrl = rawImgUrl && isSafeMediaUrl(rawImgUrl) ? rawImgUrl : undefined;
+  const videoUrl = rawVideoUrl && isSafeMediaUrl(rawVideoUrl) ? rawVideoUrl : undefined;
   const videoUrlWithParams = videoUrl ? getVideoUrlWithParams(videoUrl) : undefined;
   const [isLoading, setIsLoading] = React.useState(true);
 

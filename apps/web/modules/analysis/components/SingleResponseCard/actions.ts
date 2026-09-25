@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ZId } from "@formbricks/types/common";
 import { ResourceNotFoundError } from "@formbricks/types/errors";
@@ -17,6 +18,11 @@ import {
 } from "@/lib/utils/helper";
 import { getTag } from "@/lib/utils/services";
 import { withAuditLogging } from "@/modules/audit-logs/lib/handler";
+
+const revalidateSurveyPath = async (environmentId: string, responseId: string) => {
+  const response = await getResponse(responseId);
+  if (response) revalidatePath(`/environments/${environmentId}/surveys/${response.surveyId}`);
+};
 
 const ZCreateTagAction = z.object({
   environmentId: ZId,
@@ -97,6 +103,7 @@ export const createTagToResponseAction = authenticatedActionClient
       ctx.auditLoggingCtx.tagId = parsedInput.tagId;
       const result = await addTagToRespone(parsedInput.responseId, parsedInput.tagId);
       ctx.auditLoggingCtx.newObject = result;
+      await revalidateSurveyPath(responseEnvironmentId, parsedInput.responseId);
       return result;
     })
   );
@@ -140,6 +147,7 @@ export const deleteTagOnResponseAction = authenticatedActionClient
       ctx.auditLoggingCtx.tagId = parsedInput.tagId;
       const result = await deleteTagOnResponse(parsedInput.responseId, parsedInput.tagId);
       ctx.auditLoggingCtx.oldObject = result;
+      await revalidateSurveyPath(responseEnvironmentId, parsedInput.responseId);
       return result;
     })
   );
@@ -169,8 +177,10 @@ export const deleteResponseAction = authenticatedActionClient.inputSchema(ZDelet
     });
     ctx.auditLoggingCtx.organizationId = organizationId;
     ctx.auditLoggingCtx.responseId = parsedInput.responseId;
+    const environmentId = await getEnvironmentIdFromResponseId(parsedInput.responseId);
     const result = await deleteResponse(parsedInput.responseId, parsedInput.decrementQuotas);
     ctx.auditLoggingCtx.oldObject = result;
+    revalidatePath(`/environments/${environmentId}/surveys/${result.surveyId}`);
     return result;
   })
 );

@@ -4,7 +4,6 @@ import { InboxIcon, PresentationIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { TSurvey } from "@formbricks/types/surveys/types";
-import { revalidateSurveyIdPath } from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/(analysis)/actions";
 import { SecondaryNavigation } from "@/modules/ui/components/secondary-navigation";
 
 interface SurveyAnalysisNavigationProps {
@@ -30,9 +29,6 @@ export const SurveyAnalysisNavigation = ({
       icon: <PresentationIcon className="h-5 w-5" />,
       href: `${url}/summary?referer=true`,
       current: pathname?.includes("/summary"),
-      onClick: () => {
-        revalidateSurveyIdPath(environmentId, survey.id);
-      },
     },
     {
       id: "responses",
@@ -40,9 +36,6 @@ export const SurveyAnalysisNavigation = ({
       icon: <InboxIcon className="h-5 w-5" />,
       href: `${url}/responses?referer=true`,
       current: pathname?.includes("/responses"),
-      onClick: () => {
-        revalidateSurveyIdPath(environmentId, survey.id);
-      },
     },
   ];
 

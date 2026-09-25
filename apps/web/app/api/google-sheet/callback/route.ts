@@ -9,7 +9,7 @@ import {
   GOOGLE_SHEETS_REDIRECT_URL,
   WEBAPP_URL,
 } from "@/lib/constants";
-import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
 import { createOrUpdateIntegration, getIntegrationByType } from "@/lib/integration/service";
 import {
   IntegrationOAuthStateError,
@@ -45,12 +45,19 @@ export const GET = async (req: Request) => {
     throw err;
   }
 
-  const canUserAccessEnvironment = await hasUserEnvironmentAccess(session.user.id, environmentId);
+  const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+    session.user.id,
+    environmentId,
+    { write: true }
+  );
   if (!canUserAccessEnvironment) {
     return responses.unauthorizedResponse();
   }
 
-  const redirectUrl = new URL(`/environments/${environmentId}/workspace/integrations/google-sheets`, WEBAPP_URL);
+  const redirectUrl = new URL(
+    `/environments/${environmentId}/workspace/integrations/google-sheets`,
+    WEBAPP_URL
+  );
 
   const safeError = getSafeOAuthCallbackError(error);
   if (safeError) {

@@ -6,7 +6,7 @@ import {
   NOTION_OAUTH_CLIENT_SECRET,
   NOTION_REDIRECT_URI,
 } from "@/lib/constants";
-import { hasUserEnvironmentAccess } from "@/lib/environment/auth";
+import { canUserAccessEnvironmentIntegrations } from "@/lib/environment/auth";
 import { createIntegrationOAuthState } from "@/lib/oauth/integration-state";
 
 export const GET = withV1ApiWrapper({
@@ -23,7 +23,11 @@ export const GET = withV1ApiWrapper({
       };
     }
 
-    const canUserAccessEnvironment = await hasUserEnvironmentAccess(authentication.user.id, environmentId);
+    const canUserAccessEnvironment = await canUserAccessEnvironmentIntegrations(
+      authentication.user.id,
+      environmentId,
+      { write: true }
+    );
     if (!canUserAccessEnvironment) {
       return {
         response: responses.unauthorizedResponse(),

@@ -127,7 +127,7 @@ describe("Metadata Utils", () => {
       });
     });
 
-    test("falls back to survey name when welcome card is not enabled", async () => {
+    test("falls back to generic title, never the internal survey name, when welcome card is not enabled", async () => {
       const mockSurvey = {
         id: mockSurveyId,
         environmentId: mockEnvironmentId,
@@ -143,7 +143,7 @@ describe("Metadata Utils", () => {
       const result = await getBasicSurveyMetadata(mockSurveyId);
 
       expect(result).toEqual({
-        title: "Test Survey",
+        title: "Survey",
         description: "Please complete this survey.",
         survey: mockSurvey,
         ogImage: undefined,
@@ -175,7 +175,7 @@ describe("Metadata Utils", () => {
 
       const result = await getBasicSurveyMetadataWithCloudMock(mockSurveyId);
 
-      expect(result.title).toBe("Test Survey | Formbricks");
+      expect(result.title).toBe("Survey | Formbricks");
 
       // Reset the mock
       vi.doMock("@/lib/constants", () => ({

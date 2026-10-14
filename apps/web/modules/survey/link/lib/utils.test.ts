@@ -4,7 +4,7 @@ import { TJsEnvironmentStateSurvey } from "@formbricks/types/js";
 import { TSurveyBlock } from "@formbricks/types/surveys/blocks";
 import { TSurveyElement, TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import { TSurvey } from "@formbricks/types/surveys/types";
-import { getElementsFromSurveyBlocks, getWebAppLocale, isRTL, isRTLLanguage } from "./utils";
+import { getElementsFromSurveyBlocks, getWebAppLocale, isRTL, isRTLLanguage, toPublicSurvey } from "./utils";
 
 const createMockSurvey = (languages: TSurvey["languages"] = []): TSurvey =>
   ({
@@ -192,5 +192,15 @@ describe("getElementsFromSurveyBlocks", () => {
     const result = getElementsFromSurveyBlocks([block]);
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe("q1");
+  });
+});
+
+describe("toPublicSurvey", () => {
+  test("strips pin and internal name", () => {
+    const survey = { ...createMockSurvey(), name: "[Customer: Demo] Internal", pin: "1234" };
+    const result = toPublicSurvey(survey);
+    expect(result.name).toBe("");
+    expect(result.pin).toBeNull();
+    expect(result.id).toBe(survey.id);
   });
 });

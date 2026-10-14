@@ -19,6 +19,7 @@ import { SurveyInactive } from "@/modules/survey/link/components/survey-inactive
 import { VerifyEmail } from "@/modules/survey/link/components/verify-email";
 import { TEnvironmentContextForLinkSurvey } from "@/modules/survey/link/lib/environment";
 import { getEmailVerificationDetails } from "@/modules/survey/link/lib/helper";
+import { toPublicSurvey } from "@/modules/survey/link/lib/utils";
 
 interface SurveyRendererProps {
   survey: TSurvey;
@@ -90,8 +91,8 @@ export const renderSurvey = async ({
   }
 
   // Every prop passed to a client component is serialized into the page payload, so the survey handed to
-  // them must never carry the PIN; the PIN gate stays server-side (validateSurveyPinAction).
-  const publicSurvey: TSurvey = { ...survey, pin: null };
+  // them must never carry the PIN or internal name; the PIN gate stays server-side (validateSurveyPinAction).
+  const publicSurvey = toPublicSurvey(survey);
 
   // Handle email verification flow if enabled
   let emailVerificationStatus = "";

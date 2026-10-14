@@ -108,3 +108,8 @@ export const getWebAppLocale = (languageCode: string, survey: TSurvey): string =
   // Fallback to English if language is not supported
   return "en-US";
 };
+
+/**
+ * Strips fields respondents must never see (PIN, internal survey name) before a survey is sent to the browser.
+ */
+export const toPublicSurvey = (survey: TSurvey): TSurvey => ({ ...survey, pin: null, name: "" });

@@ -9,8 +9,9 @@ import { applyIPRateLimit } from "@/modules/core/rate-limit/helpers";
 import { rateLimitConfigs } from "@/modules/core/rate-limit/rate-limit-configs";
 import { sendLinkSurveyToVerifiedEmail } from "@/modules/email";
 import { getSurveyWithMetadata, isSurveyResponsePresent } from "@/modules/survey/link/lib/data";
-import { getOrganizationLogoUrl } from "@/modules/whitelabel/lib/organization-logo";
 import { createLinkSurveyPinToken } from "@/modules/survey/link/lib/pin-token";
+import { toPublicSurvey } from "@/modules/survey/link/lib/utils";
+import { getOrganizationLogoUrl } from "@/modules/whitelabel/lib/organization-logo";
 
 export const sendLinkSurveyEmailAction = actionClient
   .inputSchema(ZLinkSurveyEmailData)
@@ -49,12 +50,12 @@ export const validateSurveyPinAction = actionClient
     const surveyPin = survey.pin;
     const originalPin = surveyPin?.toString();
 
-    if (!originalPin) return { survey };
+    if (!originalPin) return { survey: toPublicSurvey(survey) };
     if (originalPin !== parsedInput.pin) {
       throw new InvalidInputError("INVALID_PIN");
     }
 
-    return { survey, pinAuthToken: createLinkSurveyPinToken(survey.id) };
+    return { survey: toPublicSurvey(survey), pinAuthToken: createLinkSurveyPinToken(survey.id) };
   });
 
 const ZIsSurveyResponsePresentAction = z.object({

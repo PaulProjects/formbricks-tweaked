@@ -21,7 +21,7 @@ export const getNameForURL = (value: string) => encodeURIComponent(value);
 export const getBrandColorForURL = (value: string) => encodeURIComponent(value);
 
 /**
- * Get basic survey metadata (title and description) based on link metadata, welcome card or survey name.
+ * Get basic survey metadata (title and description) based on link metadata or welcome card.
  *
  * @param surveyId - Survey identifier
  * @param languageCode - Language code for localization (default: "default")
@@ -53,7 +53,7 @@ export const getBasicSurveyMetadata = async (
   // Determine language code to use for metadata
   const langCode = useDefaultLanguageCode ? "default" : languageCode;
 
-  // Set title - priority: custom link metadata > welcome card > survey name
+  // Set title - priority: custom link metadata > welcome card > generic; the survey name is internal-only
   const titleFromMetadata = metadata?.title ? getLocalizedValue(metadata.title, langCode) || "" : undefined;
   const titleFromWelcome =
     welcomeCard?.enabled && welcomeCard.headline
@@ -61,7 +61,7 @@ export const getBasicSurveyMetadata = async (
           getLocalizedValue(recallToHeadline(welcomeCard.headline, surveyData, false, langCode), langCode)
         ) || ""
       : undefined;
-  let title = titleFromMetadata || titleFromWelcome || surveyData.name;
+  let title = titleFromMetadata || titleFromWelcome || "Survey";
 
   // Set description - priority: custom link metadata > default
   const descriptionFromMetadata = metadata?.description

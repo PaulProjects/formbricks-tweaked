@@ -185,6 +185,6 @@ describe("v1 management me route", () => {
       },
     });
     expect(mocks.getSessionUser).not.toHaveBeenCalled();
-    expect(mocks.applyRateLimit).toHaveBeenCalledWith(expect.any(Object), apiKeyData.id);
+    expect(mocks.applyRateLimit).not.toHaveBeenCalled();
   });
 });

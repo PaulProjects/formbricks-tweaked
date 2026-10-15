@@ -26,9 +26,7 @@ const handleApiKeyAuthentication = async (apiKey: string) => {
     return responses.notAuthenticatedResponse();
   }
 
-  const rateLimitError = await checkRateLimit(authentication.apiKeyId);
-  if (rateLimitError) return rateLimitError;
-
+  // API key requests are not rate limited, matching the other Management API routes.
   const apiKeyMeResponse = await buildApiKeyMeResponse(authentication);
 
   if (!apiKeyMeResponse) {

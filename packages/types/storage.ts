@@ -103,6 +103,12 @@ export const ZUploadFileConfig = z.object({
 
 export type TUploadFileConfig = z.infer<typeof ZUploadFileConfig>;
 
+export type TUploadFileAccess = {
+  pinAuthToken?: string | null;
+  singleUseId?: string | null;
+  url?: string | null;
+};
+
 export const ZUploadPrivateFileRequest = z
   .object({
     fileName: z.string().trim().min(1),
@@ -119,6 +125,11 @@ export const ZUploadPrivateFileRequest = z
         /^[a-zA-Z0-9_-]+$/,
         "Element id must contain only alphanumeric characters, hyphens, or underscores"
       ),
+    // Credentials the respondent already holds for a PIN-protected or single-use link survey. The
+    // server checks them exactly as the client response APIs do; surveys without either ignore them.
+    pinAuthToken: z.string().nullish(),
+    singleUseId: z.string().nullish(),
+    url: z.string().nullish(),
   })
   .superRefine((data, ctx) => {
     refineFileUploadInput({

@@ -7,6 +7,11 @@ import { getElementsFromBlocks } from "@/lib/survey/utils";
 import { getIsSpamProtectionEnabled } from "@/modules/license-stub/lib/utils";
 import { hasOrganizationAccess, hasPermission } from "@/modules/organization/settings/api-keys/lib/utils";
 import { getSurveyFollowUpsPermission } from "@/modules/survey/follow-ups/lib/utils";
+import {
+  CUSTOM_HEAD_SCRIPTS_PERMISSION_MESSAGE,
+  type TCustomHeadScriptsFields,
+  isCustomHeadScriptsChange,
+} from "@/modules/survey/lib/custom-head-scripts-permission";
 import { getExternalUrlsPermission } from "@/modules/survey/lib/permission";
 import { getEnvironmentIdsByOrganizationId } from "./environment";
 
@@ -89,4 +94,18 @@ export const checkFeaturePermissions = async (
   }
 
   return null;
+};
+
+// Changing a survey's head scripts takes a Manage API key, not the write access the route checks (upstream #9432).
+export const checkCustomHeadScriptsPermission = (
+  authentication: TAuthenticationApiKey,
+  environmentId: string,
+  incoming: TCustomHeadScriptsFields,
+  existing: TCustomHeadScriptsFields | null
+): Response | null => {
+  if (!isCustomHeadScriptsChange(incoming, existing)) return null;
+  const permission = authentication.environmentPermissions.find(
+    (p) => p.environmentId === environmentId
+  )?.permission;
+  return permission === "manage" ? null : responses.forbiddenResponse(CUSTOM_HEAD_SCRIPTS_PERMISSION_MESSAGE);
 };

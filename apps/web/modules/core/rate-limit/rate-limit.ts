@@ -1,10 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
 import { createCacheKey } from "@formbricks/cache";
 import { logger } from "@formbricks/logger";
-import { Result, ok } from "@formbricks/types/error-handlers";
+import { Result, err, ok } from "@formbricks/types/error-handlers";
 import { cache } from "@/lib/cache";
 import { RATE_LIMITING_DISABLED, SENTRY_DSN } from "@/lib/constants";
 import { TRateLimitConfig, type TRateLimitResponse } from "./types/rate-limit";
+
+/**
+ * The answer to a check that could not reach Redis. Abuse limits (`failClosed`: email, account creation,
+ * brute-force guards) refuse; every other limit fails open so a Redis outage does not take the app down
+ * (upstream #9845).
+ */
+const limiterUnavailable = (config: TRateLimitConfig): Result<TRateLimitResponse, string> =>
+  config.failClosed ? err("Rate limiter unavailable") : ok({ allowed: true });
 
 /**
  * Atomic Redis-based rate limiter using Lua scripts
@@ -27,9 +35,7 @@ export const checkRateLimit = async (
     const redis = await cache.getRedisClient();
     if (!redis) {
       logger.debug(`Redis unavailable`);
-      return ok({
-        allowed: true,
-      });
+      return limiterUnavailable(config);
     }
 
     const now = Date.now();
@@ -126,10 +132,6 @@ export const checkRateLimit = async (
       });
     }
 
-    // Fail open - allow request if rate limiting fails
-    // This ensures system availability over perfect rate limiting
-    return ok({
-      allowed: true,
-    });
+    return limiterUnavailable(config);
   }
 };

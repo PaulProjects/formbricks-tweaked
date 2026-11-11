@@ -27,7 +27,13 @@ export const sendLinkSurveyEmailAction = actionClient
     const organizationId = await getOrganizationIdFromSurveyId(parsedInput.surveyId);
     const organizationLogoUrl = await getOrganizationLogoUrl(organizationId);
 
-    await sendLinkSurveyToVerifiedEmail({ ...parsedInput, logoUrl: organizationLogoUrl || "" });
+    // The name comes from the stored survey, never the request: an anonymous caller could otherwise put
+    // text of their choosing into an email sent from this instance (upstream #9826).
+    await sendLinkSurveyToVerifiedEmail({
+      ...parsedInput,
+      surveyName: survey.name,
+      logoUrl: organizationLogoUrl || "",
+    });
     return { success: true };
   });
 

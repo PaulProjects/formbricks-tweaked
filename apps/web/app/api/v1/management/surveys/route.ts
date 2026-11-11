@@ -2,6 +2,7 @@ import { logger } from "@formbricks/logger";
 import { DatabaseError } from "@formbricks/types/errors";
 import { ZSurveyCreateInputWithEnvironmentId } from "@formbricks/types/surveys/types";
 import {
+  checkCustomHeadScriptsPermission,
   checkFeaturePermissions,
   getReadableEnvironmentIds,
 } from "@/app/api/v1/management/surveys/lib/utils";
@@ -136,6 +137,16 @@ export const POST = withV1ApiWrapper({
         return {
           response: featureCheckResult,
         };
+      }
+
+      const scriptsCheckResult = checkCustomHeadScriptsPermission(
+        authentication,
+        environmentId,
+        surveyData,
+        null
+      );
+      if (scriptsCheckResult) {
+        return { response: scriptsCheckResult };
       }
 
       const survey = await createSurvey(environmentId, { ...surveyData, environmentId: undefined });

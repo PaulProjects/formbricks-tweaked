@@ -139,6 +139,25 @@ describe("checkRateLimit", () => {
     }
   });
 
+  test("should refuse a failClosed limit when Redis is unavailable", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/constants", () => ({
+      REDIS_URL: "redis://localhost:6379",
+      RATE_LIMITING_DISABLED: false,
+      SENTRY_DSN: undefined,
+    }));
+    vi.doMock("@/lib/cache", () => ({
+      cache: {
+        getRedisClient: vi.fn().mockResolvedValue(null),
+      },
+    }));
+
+    const { checkRateLimit: checkRateLimitMocked } = await import("./rate-limit");
+    const result = await checkRateLimitMocked({ ...testConfig, failClosed: true }, "test-user");
+
+    expect(result.ok).toBe(false);
+  });
+
   test("should generate correct Redis key with window alignment", async () => {
     mockEval.mockResolvedValue([1, 1]);
 

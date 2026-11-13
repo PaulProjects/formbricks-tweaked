@@ -82,7 +82,8 @@ export const resetSurveyAction = authenticatedActionClient.inputSchema(ZResetSur
         },
         {
           type: "projectTeam",
-          minPermission: "readWrite",
+          // Reset irreversibly deletes every response and display, so it needs Manage (upstream #9480).
+          minPermission: "manage",
           projectId,
         },
       ],

@@ -3,7 +3,10 @@ import { TAuthenticationApiKey } from "@formbricks/types/auth";
 import { ZSurveyUpdateInput } from "@formbricks/types/surveys/types";
 import { handleErrorResponse } from "@/app/api/v1/auth";
 import { deleteSurvey } from "@/app/api/v1/management/surveys/[surveyId]/lib/surveys";
-import { checkFeaturePermissions } from "@/app/api/v1/management/surveys/lib/utils";
+import {
+  checkCustomHeadScriptsPermission,
+  checkFeaturePermissions,
+} from "@/app/api/v1/management/surveys/lib/utils";
 import { responses } from "@/app/lib/api/response";
 import {
   transformBlocksToQuestions,
@@ -195,6 +198,16 @@ export const PUT = withV1ApiWrapper({
         return {
           response: featureCheckResult,
         };
+      }
+
+      const scriptsCheckResult = checkCustomHeadScriptsPermission(
+        authentication,
+        result.survey.environmentId,
+        surveyUpdate,
+        result.survey
+      );
+      if (scriptsCheckResult) {
+        return { response: scriptsCheckResult };
       }
 
       try {

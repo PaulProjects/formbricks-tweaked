@@ -3,7 +3,7 @@ import { Result } from "@formbricks/types/error-handlers";
 import { ApiErrorResponse } from "@formbricks/types/errors";
 import { TSurveyQuotaAction } from "@formbricks/types/quota";
 import { TResponseInput, TResponseUpdateInput } from "@formbricks/types/responses";
-import { TUploadFileConfig, TUploadFileResponse } from "@formbricks/types/storage";
+import { type TUploadFileAccess, TUploadFileConfig, TUploadFileResponse } from "@formbricks/types/storage";
 import { makeRequest } from "@/lib/utils";
 
 type TResponseCreateResponseQuotaFull = {
@@ -101,7 +101,14 @@ export class ApiClient {
       name: string;
       base64: string;
     },
-    { allowedFileExtensions, surveyId, elementId }: TUploadFileConfig | undefined = {}
+    {
+      allowedFileExtensions,
+      surveyId,
+      elementId,
+      pinAuthToken,
+      singleUseId,
+      url,
+    }: (TUploadFileConfig & TUploadFileAccess) | undefined = {}
   ): Promise<string> {
     if (!file.name || !file.type || !file.base64) {
       throw new Error(`Invalid file object`);
@@ -113,6 +120,9 @@ export class ApiClient {
       allowedFileExtensions,
       surveyId,
       elementId,
+      pinAuthToken,
+      singleUseId,
+      url,
     };
 
     const response = await fetch(`${this.appUrl}/api/v1/client/${this.environmentId}/storage`, {

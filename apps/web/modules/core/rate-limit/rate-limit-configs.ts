@@ -2,13 +2,18 @@ export const rateLimitConfigs = {
   // Authentication endpoints - stricter limits for security
   auth: {
     login: { interval: 900, allowedPerInterval: 10, namespace: "auth:login" }, // 10 per 15 minutes
-    signup: { interval: 3600, allowedPerInterval: 30, namespace: "auth:signup" }, // 30 per hour
-    forgotPassword: { interval: 3600, allowedPerInterval: 5, namespace: "auth:forgot" }, // 5 per hour
-    verifyEmail: { interval: 3600, allowedPerInterval: 10, namespace: "auth:verify" }, // 10 per hour
+    signup: { interval: 3600, allowedPerInterval: 30, namespace: "auth:signup", failClosed: true }, // 30 per hour
+    forgotPassword: { interval: 3600, allowedPerInterval: 5, namespace: "auth:forgot", failClosed: true }, // 5 per hour
+    verifyEmail: { interval: 3600, allowedPerInterval: 10, namespace: "auth:verify", failClosed: true }, // 10 per hour
     // Separate from forgotPassword so requesting an email cannot exhaust the budget to use its token.
-    resetPassword: { interval: 3600, allowedPerInterval: 5, namespace: "auth:reset-password" }, // 5 per hour
+    resetPassword: {
+      interval: 3600,
+      allowedPerInterval: 5,
+      namespace: "auth:reset-password",
+      failClosed: true,
+    }, // 5 per hour
     // Unauthenticated and tells the caller whether an email is registered.
-    emailToken: { interval: 3600, allowedPerInterval: 10, namespace: "auth:email-token" }, // 10 per hour
+    emailToken: { interval: 3600, allowedPerInterval: 10, namespace: "auth:email-token", failClosed: true }, // 10 per hour
   },
 
   // API endpoints - higher limits for legitimate usage
@@ -22,13 +27,24 @@ export const rateLimitConfigs = {
 
   // Server actions - varies by action type
   actions: {
-    emailUpdate: { interval: 3600, allowedPerInterval: 3, namespace: "action:email" }, // 3 per hour
-    accountDeletion: { interval: 3600, allowedPerInterval: 5, namespace: "action:account-delete" }, // 5 per hour
-    surveyFollowUp: { interval: 3600, allowedPerInterval: 50, namespace: "action:followup" }, // 50 per hour
+    emailUpdate: { interval: 3600, allowedPerInterval: 3, namespace: "action:email", failClosed: true }, // 3 per hour
+    accountDeletion: {
+      interval: 3600,
+      allowedPerInterval: 5,
+      namespace: "action:account-delete",
+      failClosed: true,
+    }, // 5 per hour
+    surveyFollowUp: {
+      interval: 3600,
+      allowedPerInterval: 50,
+      namespace: "action:followup",
+      failClosed: true,
+    }, // 50 per hour
     sendLinkSurveyEmail: {
       interval: 3600,
       allowedPerInterval: 10,
       namespace: "action:send-link-survey-email",
+      failClosed: true,
     }, // 10 per hour
     isSurveyResponsePresent: {
       interval: 60,
@@ -39,6 +55,7 @@ export const rateLimitConfigs = {
       interval: 60,
       allowedPerInterval: 10,
       namespace: "action:validate-survey-pin",
+      failClosed: true,
     }, // 10 per minute — prevents brute-force PIN guessing
     licenseRecheck: { interval: 60, allowedPerInterval: 5, namespace: "action:license-recheck" }, // 5 per minute
   },

@@ -23,6 +23,10 @@ import { updateSurvey, updateSurveyDraft } from "@/modules/survey/editor/lib/sur
 import { ZSurveyDraft } from "@/modules/survey/editor/types/survey";
 import { getSurveyFollowUpsPermission } from "@/modules/survey/follow-ups/lib/utils";
 import { getElementsFromBlocks } from "@/modules/survey/lib/client-utils";
+import {
+  type TCustomHeadScriptsFields,
+  isCustomHeadScriptsChange,
+} from "@/modules/survey/lib/custom-head-scripts-permission";
 import { checkSpamProtectionPermission } from "@/modules/survey/lib/permission";
 import { getOrganizationBilling, getSurvey } from "@/modules/survey/lib/survey";
 import { getProject } from "./lib/project";
@@ -50,6 +54,25 @@ const checkSurveyFollowUpsPermission = async (
       throw new OperationNotAllowedError("Survey follow ups are not enabled for this organization");
     }
   }
+};
+
+// Changing head scripts needs Manage access; every other survey edit stays at Read & write (upstream #9432).
+const checkCustomHeadScriptsPermission = async (
+  userId: string,
+  organizationId: string,
+  surveyId: string,
+  incoming: TCustomHeadScriptsFields,
+  existing: TCustomHeadScriptsFields | null
+): Promise<void> => {
+  if (!isCustomHeadScriptsChange(incoming, existing)) return;
+  await checkAuthorizationUpdated({
+    userId,
+    organizationId,
+    access: [
+      { type: "organization", roles: ["owner", "manager"] },
+      { type: "projectTeam", projectId: await getProjectIdFromSurveyId(surveyId), minPermission: "manage" },
+    ],
+  });
 };
 
 export const updateSurveyDraftAction = authenticatedActionClient.inputSchema(ZSurveyDraft).action(
@@ -92,6 +115,7 @@ export const updateSurveyDraftAction = authenticatedActionClient.inputSchema(ZSu
     }
 
     await checkExternalUrlsPermission(organizationId, survey, oldObject);
+    await checkCustomHeadScriptsPermission(ctx.user.id, organizationId, survey.id, survey, oldObject);
 
     // Use the draft version that skips validation
     const result = await updateSurveyDraft(survey);
@@ -143,6 +167,13 @@ export const updateSurveyAction = authenticatedActionClient.inputSchema(ZSurvey)
 
     // Check external URLs permission (with grandfathering)
     await checkExternalUrlsPermission(organizationId, parsedInput, oldObject);
+    await checkCustomHeadScriptsPermission(
+      ctx.user.id,
+      organizationId,
+      parsedInput.id,
+      parsedInput,
+      oldObject
+    );
     const result = await updateSurvey(parsedInput);
     ctx.auditLoggingCtx.oldObject = oldObject;
     ctx.auditLoggingCtx.newObject = result;

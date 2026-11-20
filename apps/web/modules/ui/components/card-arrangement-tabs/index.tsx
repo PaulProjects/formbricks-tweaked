@@ -1,5 +1,6 @@
 "use client";
 
+import { LayoutTemplate } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { TCardArrangementOptions } from "@formbricks/types/styling";
 import { TSurveyType } from "@formbricks/types/surveys/types";
@@ -31,6 +32,8 @@ export const CardArrangementTabs = ({
     switch (cardArrangement) {
       case "casual":
         return <CasualCardArrangementIcon />;
+      case "redesign":
+        return <LayoutTemplate className="h-full w-full" />;
       case "straight":
         return <StraightCardArrangementIcon />;
       default:
@@ -46,6 +49,15 @@ export const CardArrangementTabs = ({
           handleCardArrangementChange(value);
         }}
         options={[
+          ...(surveyType === "link"
+            ? [
+                {
+                  value: "redesign" as const,
+                  label: t("environments.surveys.edit.redesign"),
+                  icon: getCardArrangementIcon("redesign"),
+                },
+              ]
+            : []),
           {
             value: "simple",
             label: t("environments.surveys.edit.simple"),

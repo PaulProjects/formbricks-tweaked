@@ -103,7 +103,7 @@ export const STYLE_DEFAULTS: TProjectStyling = {
   highlightBorderColor: { light: _colors["highlightBorderColor.light"] },
   isDarkModeEnabled: false,
   roundness: 8,
-  cardArrangement: { linkSurveys: "simple", appSurveys: "simple" },
+  cardArrangement: { linkSurveys: "redesign", appSurveys: "simple" },
 
   // Headlines & Descriptions
   elementHeadlineColor: { light: _colors["elementHeadlineColor.light"] },

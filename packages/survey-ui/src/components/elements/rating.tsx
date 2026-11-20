@@ -438,14 +438,18 @@ function Rating({
 
           {/* Labels */}
           {(lowerLabel ?? upperLabel) ? (
-            <div className="mt-4 flex justify-between gap-8 px-1.5">
+            <div className="mt-4 flex justify-between gap-8 px-1.5" data-fb-scale-labels>
               {lowerLabel ? (
-                <Label variant="card" className="max-w-[50%] leading-6" dir={dir}>
+                <Label variant="card" className="max-w-[50%] leading-6" dir={dir} data-fb-scale-label="lower">
                   {lowerLabel}
                 </Label>
               ) : null}
               {upperLabel ? (
-                <Label variant="card" className="max-w-[50%] text-right leading-6" dir={dir}>
+                <Label
+                  variant="card"
+                  className="max-w-[50%] text-right leading-6"
+                  dir={dir}
+                  data-fb-scale-label="upper">
                   {upperLabel}
                 </Label>
               ) : null}

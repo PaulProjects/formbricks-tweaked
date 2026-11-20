@@ -1159,6 +1159,7 @@ export function Survey({
               isBackButtonHidden={localSurvey.isBackButtonHidden}
               isAutoProgressingEnabled={Boolean(localSurvey.isAutoProgressingEnabled)}
               isChoiceShortcutsEnabled={cardArrangement === "redesign" && offset === 0}
+              hasStepTransition={cardArrangement === "redesign"}
               onOpenExternalURL={onOpenExternalURL}
               dir={dir}
               fullSizeCards={isFullSize}

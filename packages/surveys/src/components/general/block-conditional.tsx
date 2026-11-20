@@ -41,6 +41,8 @@ interface BlockConditionalProps {
   isBackButtonHidden: boolean;
   isAutoProgressingEnabled: boolean;
   isChoiceShortcutsEnabled: boolean;
+  /** Redesign: the question animates out during the auto-progress delay */
+  hasStepTransition: boolean;
   onOpenExternalURL?: (url: string) => void | Promise<void>;
   dir?: "ltr" | "rtl" | "auto";
   fullSizeCards: boolean;
@@ -66,6 +68,7 @@ export function BlockConditional({
   isBackButtonHidden,
   isAutoProgressingEnabled,
   isChoiceShortcutsEnabled,
+  hasStepTransition,
   onOpenExternalURL,
   dir,
   fullSizeCards,
@@ -85,6 +88,7 @@ export function BlockConditional({
   const autoProgressingInFlightRef = useRef(false);
   const autoProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestAutoProgressValueRef = useRef<TResponseData>({});
+  const [isLeaving, setIsLeaving] = useState(false);
   const autoProgressElement = getAutoProgressElement(block.elements, isAutoProgressingEnabled);
   const shouldHideSubmitButton = shouldHideSubmitButtonForAutoProgress(
     block.elements,
@@ -96,6 +100,7 @@ export function BlockConditional({
     if (autoProgressTimeoutRef.current) clearTimeout(autoProgressTimeoutRef.current);
     autoProgressTimeoutRef.current = null;
     autoProgressingInFlightRef.current = false;
+    setIsLeaving(false);
   };
 
   // Don't submit a block the respondent has already left.
@@ -163,14 +168,19 @@ export function BlockConditional({
     ) {
       autoProgressingInFlightRef.current = true;
       latestAutoProgressValueRef.current = mergedValue;
+      setIsLeaving(hasStepTransition);
       // Defer submission so element-level change handlers can finalize TTC updates first.
-      autoProgressTimeoutRef.current = setTimeout(() => {
-        const blockTtc = collectTtcValues();
-        // Only this block's answers, like the regular submit path (previously re-sent the whole response)
-        onSubmit(collectBlockResponses(latestAutoProgressValueRef.current), blockTtc);
-        autoProgressingInFlightRef.current = false;
-        autoProgressTimeoutRef.current = null;
-      }, getAutoProgressDelayMs(autoProgressElement));
+      autoProgressTimeoutRef.current = setTimeout(
+        () => {
+          const blockTtc = collectTtcValues();
+          // Only this block's answers, like the regular submit path (previously re-sent the whole response)
+          onSubmit(collectBlockResponses(latestAutoProgressValueRef.current), blockTtc);
+          autoProgressingInFlightRef.current = false;
+          autoProgressTimeoutRef.current = null;
+          setIsLeaving(false);
+        },
+        getAutoProgressDelayMs(autoProgressElement, hasStepTransition)
+      );
     }
   };
 
@@ -392,7 +402,10 @@ export function BlockConditional({
   };
 
   return (
-    <div ref={containerRef} className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
+    <div
+      ref={containerRef}
+      data-fb-leaving={isLeaving || undefined}
+      className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
       {/* Scrollable container for the entire block */}
       <ScrollableContainer fullSizeCards={fullSizeCards}>
         <div className="space-y-6">

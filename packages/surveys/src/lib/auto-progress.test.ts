@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { type TSurveyElement, TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import {
+  STEP_EXIT_MS,
   getAutoProgressDelayMs,
   getAutoProgressElement,
   shouldHideSubmitButtonForAutoProgress,
@@ -121,6 +122,12 @@ describe("auto-progress helpers", () => {
       const rating = createElement("r", TSurveyElementTypeEnum.Rating, true);
       expect(getAutoProgressDelayMs(singleChoice)).toBe(300);
       expect(getAutoProgressDelayMs(rating)).toBe(0);
+    });
+
+    test("delay is the exit animation for every type with a step transition", () => {
+      const rating = createElement("r", TSurveyElementTypeEnum.Rating, true);
+      expect(getAutoProgressDelayMs(singleChoice, true)).toBe(STEP_EXIT_MS);
+      expect(getAutoProgressDelayMs(rating, true)).toBe(STEP_EXIT_MS);
     });
   });
 });

@@ -140,8 +140,8 @@ test.describe("Redesign link survey", () => {
     const box = await next.boundingBox();
     expect(box!.width).toBeGreaterThanOrEqual(300);
     // Short content: the sticky bar still sits at the bottom (only the branding line may be below it).
-    const branding = await page.getByText("Powered by").boundingBox();
-    const bottomLimit = branding ? branding.y : 812;
+    const branding = page.getByText("Powered by");
+    const bottomLimit = (await branding.count()) ? (await branding.first().boundingBox())!.y : 812;
     expect(box!.y + box!.height).toBeGreaterThan(bottomLimit - 24 - 16);
     expect(box!.y + box!.height).toBeLessThanOrEqual(812);
   });
@@ -158,8 +158,12 @@ test.describe("Redesign link survey", () => {
   test("latest pick within the auto-advance window is stored", async ({ page }, testInfo) => {
     const { surveyId, ids } = ctx(testInfo);
     await open(page, surveyId);
-    await page.locator("[data-fb-choice-option]").filter({ hasText: "Alpha" }).click();
-    await page.locator("[data-fb-choice-option]").filter({ hasText: "Beta" }).click();
+    // Both picks in one task, so the second always lands inside the 300ms window
+    await page.evaluate(() => {
+      const options = [...document.querySelectorAll<HTMLElement>("[data-fb-choice-option]")];
+      options.find((o) => o.textContent?.includes("Alpha"))!.click();
+      options.find((o) => o.textContent?.includes("Beta"))!.click();
+    });
     await expect(page.getByTestId("questionCard-1")).toBeVisible();
     await page.keyboard.press("a");
     await nextButton(page).click();
@@ -179,5 +183,69 @@ test.describe("Redesign link survey", () => {
     await page.waitForTimeout(1000);
     await expect(page.getByTestId("questionCard-0")).toBeVisible();
     await expect(page.getByTestId("questionCard-1")).toHaveCount(0);
+  });
+
+  test("pick then immediate Next submits the block once", async ({ page }, testInfo) => {
+    const { surveyId, ids } = ctx(testInfo);
+    const responseWrites: string[] = [];
+    page.on("request", (req) => {
+      if (/\/client\/[^/]+\/responses/.test(req.url()) && req.method() !== "GET")
+        responseWrites.push(req.url());
+    });
+    await open(page, surveyId);
+    // Next one frame after the pick (so the pick is rendered), well inside the 300ms auto-advance window
+    await page.evaluate(async () => {
+      const options = [...document.querySelectorAll<HTMLElement>("[data-fb-choice-option]")];
+      options.find((o) => o.textContent?.includes("Alpha"))!.click();
+      await new Promise(requestAnimationFrame);
+      document.querySelector<HTMLElement>("[data-fb-block-actions] .button-custom")!.click();
+    });
+    await expect(page.getByTestId("questionCard-1")).toBeVisible();
+    // Past the auto-advance delay: a leftover timer would skip question 2
+    await page.waitForTimeout(800);
+    await expect(page.getByTestId("questionCard-1")).toBeVisible();
+    await expect(page.getByTestId("questionCard-2")).toHaveCount(0);
+    const response = await prisma.response.findFirstOrThrow({ where: { surveyId } });
+    expect(response.data).toEqual({ [ids.single]: "Alpha" });
+    expect(responseWrites).toHaveLength(1);
+  });
+
+  test("desktop: action row is inline, not sticky", async ({ page }, testInfo) => {
+    const { surveyId } = ctx(testInfo);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(page, surveyId);
+    const position = await page
+      .locator("[data-fb-block-actions]")
+      .evaluate((el) => getComputedStyle(el).position);
+    expect(position).not.toBe("sticky");
+  });
+
+  test("mobile: with many options, tapping Next validates instead of scrolling", async ({
+    page,
+  }, testInfo) => {
+    const { surveyId } = ctx(testInfo);
+    const survey = await prisma.survey.findUniqueOrThrow({ where: { id: surveyId } });
+    const blocks = survey.blocks as { elements: { id: string; choices?: unknown[] }[] }[];
+    blocks[0].elements[0].choices = Array.from({ length: 16 }, (_, i) => ({
+      id: `long${i}`,
+      label: t(`Option ${i + 1}`),
+    }));
+    await prisma.survey.update({ where: { id: surveyId }, data: { blocks: blocks as object[] } });
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await open(page, surveyId);
+    const box = (await nextButton(page).boundingBox())!;
+    const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    // Nothing (e.g. the scroll-to-bottom button) sits on top of Next once the loading overlay is gone
+    await expect
+      .poll(() =>
+        page.evaluate(
+          ({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest(".button-custom")),
+          center
+        )
+      )
+      .toBe(true);
+    await page.mouse.click(center.x, center.y);
+    await expect(page.getByText(/fill out this field/i).first()).toBeInViewport();
   });
 });

@@ -106,8 +106,8 @@ export interface TBaseStyling {
   isDarkModeEnabled?: boolean | null;
   roundness?: number | null;
   cardArrangement?: {
-    linkSurveys: "casual" | "straight" | "simple";
-    appSurveys: "casual" | "straight" | "simple";
+    linkSurveys: "casual" | "straight" | "simple" | "redesign";
+    appSurveys: "casual" | "straight" | "simple" | "redesign";
   } | null;
   background?: {
     bg?: string | null;

@@ -7,7 +7,7 @@ export const ZStylingColor = z.object({
 });
 export type TStylingColor = z.infer<typeof ZStylingColor>;
 
-export const ZCardArrangementOptions = z.enum(["casual", "straight", "simple"]);
+export const ZCardArrangementOptions = z.enum(["casual", "straight", "simple", "redesign"]);
 export type TCardArrangementOptions = z.infer<typeof ZCardArrangementOptions>;
 
 export const ZCardArrangement = z.object({

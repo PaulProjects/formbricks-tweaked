@@ -20,7 +20,7 @@ export const ZStylingColor = z.object({
   dark: ZColor.nullish(),
 });
 
-export const ZCardArrangementOptions = z.enum(["casual", "straight", "simple"]);
+export const ZCardArrangementOptions = z.enum(["casual", "straight", "simple", "redesign"]);
 
 export const ZCardArrangement = z.object({
   linkSurveys: ZCardArrangementOptions,

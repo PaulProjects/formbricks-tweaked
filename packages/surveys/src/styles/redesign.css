@@ -5,13 +5,13 @@
   height: 100%;
   --fb-progress-track-height: 4px;
   --fb-progress-track-border-radius: 0px;
+  /* Card color, kept for the mobile footer tint before the step makes the card transparent */
+  --fb-redesign-card-color: var(--fb-survey-background-color);
 }
 
-#fbjs .fb-redesign .bg-survey-bg {
-  background: transparent;
-}
-
+/* No card: bg-survey-bg is a layered !important utility, so it is cleared through its variable */
 #fbjs .fb-redesign .fb-redesign-step {
+  --fb-survey-background-color: transparent;
   height: 100%;
   animation: fb-redesign-in-forward 320ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
 }
@@ -42,29 +42,42 @@
   }
 }
 
+/* max-height: the track's h-2 utility is !important */
 #fbjs .fb-redesign .progress-track {
-  height: 4px;
+  max-height: 4px;
   border-radius: 0;
 }
 
-/* Exactly one scroll container per step (ScrollableContainer's inner div) */
-#fbjs .fb-redesign .fb-redesign-step > div,
-#fbjs .fb-redesign .fb-redesign-step > div > .relative {
+/* The step fills the renderer height down to exactly one scroll container (ScrollableContainer's inner div).
+   Tailwind utilities are layered !important, so we size via properties they don't set. */
+#fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+#fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative > div:has([data-fb-block-actions]) {
+  flex: 1;
+  min-height: 0;
+}
+
+#fbjs .fb-redesign .fb-redesign-step .relative:has(> .overflow-auto) {
   height: 100%;
 }
 
 #fbjs .fb-redesign .fb-redesign-step .overflow-auto {
   height: 100%;
   max-height: none !important;
-  overflow-y: auto;
   overscroll-behavior: contain;
-  padding-inline: 48px;
 }
 
+/* The scroller keeps its px-4 (16px), so 16px + 32px = 48px page margin */
 #fbjs .fb-redesign .fb-redesign-step .overflow-auto > div {
+  box-sizing: content-box;
   max-width: 720px;
   margin-inline: auto;
-  padding-block: 48px 0;
+  padding: 48px 32px 0;
 }
 
 /* Headline */
@@ -80,9 +93,11 @@
 
 /* Options (survey-ui option containers carry .rounded-option; selected ones .border-brand) */
 #fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]) {
+  --fb-option-padding-x: 12px;
+  --fb-option-padding-y: 8px;
+  --fb-option-border-radius: 22px;
+  justify-content: center;
   min-height: 44px;
-  border-radius: 22px;
-  padding: 8px 12px;
   gap: 8px;
   width: fit-content;
   min-width: 16rem;
@@ -104,15 +119,13 @@
 
 #fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) {
   counter-increment: fb-choice;
-  position: relative;
-  padding-inline-start: 30px;
 }
 
-#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"])::before {
+/* Badge is a flex item before the label text: 12px padding + 22px badge + 8px gap (text's 12px margin - 4px) */
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) > span:first-child::before {
   content: counter(fb-choice, upper-alpha) / "";
-  position: absolute;
-  inset-inline-start: 12px;
-  top: 9px;
+  flex: none;
+  margin-inline-end: -4px;
   box-sizing: border-box;
   width: 22px;
   height: 22px;
@@ -123,7 +136,10 @@
   text-align: center;
 }
 
-#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]).border-brand::before {
+#fbjs
+  .fb-redesign
+  label[data-fb-choice-option]:not([class*="aspect-"]).border-brand
+  > span:first-child::before {
   background: var(--fb-survey-brand-color);
   border-color: var(--fb-survey-brand-color);
   color: #fff;
@@ -150,8 +166,14 @@
 /* Action row: inline on desktop */
 #fbjs .fb-redesign [data-fb-block-actions] {
   position: static;
+  gap: 12px;
   margin-top: 32px;
   padding-bottom: 24px;
+}
+
+/* Row is flex-row-reverse + justify-between (!important utilities): an auto margin keeps Next at the start */
+#fbjs .fb-redesign [data-fb-block-actions] > div {
+  margin-inline-end: auto;
 }
 
 #fbjs .fb-redesign [data-fb-block-actions] button {
@@ -159,19 +181,21 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-#fbjs .fb-redesign [data-fb-block-actions] button[type="submit"],
+/* The submit button sizes itself from these vars via inline style */
 #fbjs .fb-redesign [data-fb-block-actions] .button-custom {
-  height: 44px;
-  border-radius: 22px;
+  --fb-button-height: 44px;
+  --fb-button-border-radius: 22px;
 }
 
 @container (max-width: 639px) {
-  #fbjs .fb-redesign .fb-redesign-step .overflow-auto {
-    padding-inline: 0;
-  }
-
+  /* Full-height column so the action row sits at the bottom; -16px cancels the scroller's px-4 */
   #fbjs .fb-redesign .fb-redesign-step .overflow-auto > div {
-    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100%;
+    margin-inline: -16px;
+    padding: 24px 0 0;
   }
 
   #fbjs .fb-redesign .fb-redesign-step .overflow-auto > div > div:first-child {
@@ -199,12 +223,11 @@
   #fbjs .fb-redesign [data-fb-block-actions] {
     position: sticky;
     bottom: 0;
-    gap: 12px;
-    margin-top: 0;
+    margin-top: auto;
     padding: 16px 24px max(16px, env(safe-area-inset-bottom));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    background: color-mix(in srgb, var(--fb-survey-background-color) 70%, transparent);
+    --fb-survey-background-color: color-mix(in srgb, var(--fb-redesign-card-color) 70%, transparent);
   }
 
   #fbjs .fb-redesign [data-fb-block-actions] > div {
@@ -217,10 +240,9 @@
     white-space: nowrap;
   }
 
-  #fbjs .fb-redesign [data-fb-block-actions] button[type="submit"],
   #fbjs .fb-redesign [data-fb-block-actions] .button-custom {
+    --fb-button-height: 48px;
     width: 100%;
-    height: 48px;
   }
 }
 

@@ -107,7 +107,6 @@ test.describe("Redesign link survey", () => {
 
     // multi choice via keyboard letters
     const options = page.locator("[data-fb-choice-option]");
-    await page.waitForTimeout(400); // step enter transition is 320ms; letter shortcuts need the settled step
     await page.keyboard.press("a");
     await page.keyboard.press("c");
     await expect(options.nth(0).locator("input")).toBeChecked();
@@ -131,9 +130,7 @@ test.describe("Redesign link survey", () => {
     });
   });
 
-  // FIXME(redesign): at 375x812 Next is 283px wide (row padding 24px stacks on the scroller's px-4) and sits
-  // right under the content (y~370) instead of pinned to the viewport bottom. Remove fixme once fixed.
-  test.fixme("mobile: Next is full-width and pinned to the bottom", async ({ page }, testInfo) => {
+  test("mobile: Next is full-width and pinned to the bottom", async ({ page }, testInfo) => {
     const { surveyId } = ctx(testInfo);
     await page.setViewportSize({ width: 375, height: 812 });
     await open(page, surveyId);
@@ -142,7 +139,10 @@ test.describe("Redesign link survey", () => {
     await expect(next).toBeVisible();
     const box = await next.boundingBox();
     expect(box!.width).toBeGreaterThanOrEqual(300);
-    expect(box!.y + box!.height).toBeGreaterThan(812 - 120);
+    // Short content: the sticky bar still sits at the bottom (only the branding line may be below it).
+    const branding = await page.getByText("Powered by").boundingBox();
+    const bottomLimit = branding ? branding.y : 812;
+    expect(box!.y + box!.height).toBeGreaterThan(bottomLimit - 24 - 16);
     expect(box!.y + box!.height).toBeLessThanOrEqual(812);
   });
 

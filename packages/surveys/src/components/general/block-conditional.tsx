@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { type TJsFileUploadParams } from "@formbricks/types/js";
 import { type TResponseData, type TResponseTtc } from "@formbricks/types/responses";
 import { type TUploadFileConfig } from "@formbricks/types/storage";
@@ -102,13 +102,14 @@ export function BlockConditional({
   useEffect(() => cancelAutoProgress, []);
 
   // Letter shortcuts (A, B, C…) click the matching option of a block's single choice question.
+  // Layout effect: a plain effect is attached a frame after the step mounts, so early key presses were lost.
   const containerRef = useRef<HTMLDivElement>(null);
   const hasSingleChoiceElement =
     block.elements.length === 1 &&
     (block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceSingle ||
       block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceMulti);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isChoiceShortcutsEnabled || !hasSingleChoiceElement) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.repeat || isTypingTarget(event.target)) return;

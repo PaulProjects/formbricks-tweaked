@@ -5,6 +5,7 @@ import { type TSurveyStyling } from "@formbricks/types/surveys/types";
 import { isLight, mixColor } from "@/lib/color";
 import global from "@/styles/global.css?inline";
 import preflight from "@/styles/preflight.css?inline";
+import redesignCss from "@/styles/redesign.css?inline";
 import editorCss from "../../../../apps/web/modules/ui/components/editor/styles-editor-frontend.css?inline";
 
 // Store the nonce globally for style elements
@@ -44,7 +45,7 @@ export const addStylesToDom = () => {
     }
 
     // Include survey-ui CSS variables before other styles
-    styleElement.innerHTML = preflight + global + editorCss + surveyUiCss;
+    styleElement.innerHTML = preflight + global + editorCss + surveyUiCss + redesignCss;
     document.head.appendChild(styleElement);
   } else {
     // If style element already exists, update its nonce if needed

@@ -142,6 +142,16 @@ export function StackedCardsContainer({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only update when cardArrangement changes
   }, [cardArrangement]);
 
+  // Direction only changes when the step index changes, so re-renders never restart the animation
+  const stepRef = useRef({ idx: blockIdxTemp, direction: "forward" });
+  if (stepRef.current.idx !== blockIdxTemp) {
+    stepRef.current = {
+      idx: blockIdxTemp,
+      direction: blockIdxTemp < stepRef.current.idx ? "back" : "forward",
+    };
+  }
+  const direction = stepRef.current.direction;
+
   return (
     <div // NOSONAR - hover handlers are for visual feedback on card animation, not interactive content
       data-testid="stacked-cards-container"
@@ -153,7 +163,13 @@ export function StackedCardsContainer({
         setHovered(false);
       }}>
       <div style={{ height: cardHeight }} />
-      {cardArrangement === "simple" ? (
+      {cardArrangement === "redesign" ? (
+        <div className="fb-redesign">
+          <div key={blockIdxTemp} className="fb-redesign-step" data-direction={direction}>
+            {getCardContent(blockIdxTemp, 0)}
+          </div>
+        </div>
+      ) : cardArrangement === "simple" ? (
         <div
           id={`questionCard-${blockIdxTemp.toString()}`}
           data-testid={`questionCard-${blockIdxTemp.toString()}`}

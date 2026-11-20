@@ -84,7 +84,11 @@ export const LinkSurveyWrapper = ({
           surveyType={surveyType}
           styling={styling}
           onBackgroundLoaded={handleBackgroundLoaded}>
-          <div className="flex max-h-dvh min-h-dvh items-center justify-center overflow-clip">
+          <div
+            className={cn(
+              "flex items-center justify-center overflow-clip",
+              styling.cardArrangement?.linkSurveys === "redesign" ? "h-[100svh]" : "max-h-dvh min-h-dvh"
+            )}>
             {!styling.isLogoHidden && (project.logo?.url || styling.logo?.url) && (
               <ClientLogo projectLogo={project.logo} surveyLogo={styling.logo} dir={dir} />
             )}

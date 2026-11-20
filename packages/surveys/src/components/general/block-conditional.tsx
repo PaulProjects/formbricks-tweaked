@@ -378,6 +378,7 @@ export function BlockConditional({
           </div>
 
           <div
+            data-fb-block-actions
             className={cn(
               "flex w-full flex-row-reverse justify-between",
               fullSizeCards ? "bg-survey-bg sticky bottom-0" : ""

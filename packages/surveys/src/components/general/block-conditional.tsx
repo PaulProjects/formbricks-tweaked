@@ -101,16 +101,16 @@ export function BlockConditional({
   // Don't submit a block the respondent has already left.
   useEffect(() => cancelAutoProgress, []);
 
-  // Letter shortcuts (A, B, C…) click the matching option of a block's single choice question.
+  // Letter shortcuts (A, B, C…) click the matching option of a block's choice question.
   // Layout effect: a plain effect is attached a frame after the step mounts, so early key presses were lost.
   const containerRef = useRef<HTMLDivElement>(null);
-  const hasSingleChoiceElement =
+  const hasChoiceElement =
     block.elements.length === 1 &&
     (block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceSingle ||
       block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceMulti);
 
   useLayoutEffect(() => {
-    if (!isChoiceShortcutsEnabled || !hasSingleChoiceElement) return;
+    if (!isChoiceShortcutsEnabled || !hasChoiceElement) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.repeat || isTypingTarget(event.target)) return;
       const options = containerRef.current?.querySelectorAll<HTMLElement>("[data-fb-choice-option]");
@@ -122,7 +122,7 @@ export function BlockConditional({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isChoiceShortcutsEnabled, hasSingleChoiceElement]);
+  }, [isChoiceShortcutsEnabled, hasChoiceElement]);
 
   const handleElementChange = (elementId: string, responseData: TResponseData) => {
     // If user moved to a different element, we should track it
@@ -385,6 +385,9 @@ export function BlockConditional({
     // Collect TTC and responses, then submit
     const blockTtc = collectTtcValues();
     const blockResponses = collectBlockResponses();
+    // A manual Next replaces a pending auto-advance, so the block is submitted only once.
+    // Cancelled only here: if validation fails (stale value) the pending auto-advance still runs.
+    cancelAutoProgress();
     onSubmit(blockResponses, blockTtc);
   };
 
@@ -453,7 +456,10 @@ export function BlockConditional({
                 backButtonLabel={
                   block.backButtonLabel ? getLocalizedValue(block.backButtonLabel, languageCode) : undefined
                 }
-                onClick={onBack}
+                onClick={() => {
+                  cancelAutoProgress();
+                  onBack();
+                }}
                 tabIndex={0}
               />
             )}

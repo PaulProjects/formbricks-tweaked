@@ -39,4 +39,11 @@ describe("isTypingTarget", () => {
     expect(isTypingTarget(document.createElement("div"))).toBe(false);
     expect(isTypingTarget(null)).toBe(false);
   });
+
+  test("radio and checkbox inputs are not typing targets, text inputs are", () => {
+    const input = (type: string) => Object.assign(document.createElement("input"), { type });
+    expect(isTypingTarget(input("radio"))).toBe(false);
+    expect(isTypingTarget(input("checkbox"))).toBe(false);
+    expect(isTypingTarget(input("text"))).toBe(true);
+  });
 });

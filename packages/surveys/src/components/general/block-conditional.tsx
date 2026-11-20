@@ -89,11 +89,13 @@ export function BlockConditional({
   const autoProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestAutoProgressValueRef = useRef<TResponseData>({});
   const [isLeaving, setIsLeaving] = useState(false);
+  // Answers from before the auto-progress selection: keeps "Next" from flashing up while the question leaves
+  const valueBeforeLeavingRef = useRef<TResponseData>({});
   const autoProgressElement = getAutoProgressElement(block.elements, isAutoProgressingEnabled);
   const shouldHideSubmitButton = shouldHideSubmitButtonForAutoProgress(
     block.elements,
     isAutoProgressingEnabled,
-    value
+    isLeaving ? valueBeforeLeavingRef.current : value
   );
 
   const cancelAutoProgress = () => {
@@ -168,6 +170,7 @@ export function BlockConditional({
     ) {
       autoProgressingInFlightRef.current = true;
       latestAutoProgressValueRef.current = mergedValue;
+      valueBeforeLeavingRef.current = value;
       setIsLeaving(hasStepTransition);
       // Defer submission so element-level change handlers can finalize TTC updates first.
       autoProgressTimeoutRef.current = setTimeout(

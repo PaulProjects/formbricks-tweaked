@@ -38,7 +38,8 @@
   [data-fb-scroller]
   > div
   > :not([data-fb-block-actions]) {
-  animation: fb-redesign-out 180ms cubic-bezier(0.5, 0, 0.75, 0) both;
+  /* Moves from the first frame; an ease-in curve barely changed for ~90ms and read as lag */
+  animation: fb-redesign-out 180ms cubic-bezier(0.25, 0.1, 0.5, 1) both;
 }
 
 @keyframes fb-redesign-out {
@@ -131,6 +132,26 @@
   @container (max-width: 639px) {
     #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div > :has(+ [data-fb-block-actions]) {
       margin-block: auto !important;
+    }
+
+    /* Welcome card: its info line (duration, responses) follows the button in the DOM; keep it under the text */
+    #fbjs
+      .fb-redesign
+      .fb-redesign-step
+      [data-fb-scroller]
+      > div
+      > :has(+ [data-fb-block-actions] + [data-fb-welcome-info]) {
+      margin-bottom: 0 !important;
+    }
+
+    #fbjs .fb-redesign [data-fb-welcome-info] {
+      margin-bottom: auto !important;
+    }
+
+    /* The welcome button row carries mt-4/pt-4 */
+    #fbjs .fb-redesign [data-fb-block-actions] {
+      margin-top: auto !important;
+      padding-top: 16px !important;
     }
   }
 }
@@ -308,6 +329,7 @@
   }
 
   #fbjs .fb-redesign [data-fb-block-actions] {
+    order: 1;
     position: sticky;
     bottom: 0;
     margin-top: auto;

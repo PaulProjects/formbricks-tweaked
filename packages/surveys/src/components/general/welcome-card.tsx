@@ -147,31 +147,38 @@ export function WelcomeCard({
   return (
     <ScrollableContainer fullSizeCards={fullSizeCards}>
       <div>
-        {fileUrl ? (
-          <ElementMedia imgUrl={fileUrl} altText={t("common.company_logo")} className="mb-8 min-h-0 w-1/4" />
-        ) : videoUrl ? (
-          <ElementMedia videoUrl={videoUrl} altText={t("common.welcome_video")} />
-        ) : null}
+        <div>
+          {fileUrl ? (
+            <ElementMedia
+              imgUrl={fileUrl}
+              altText={t("common.company_logo")}
+              className="mb-8 min-h-0 w-1/4"
+            />
+          ) : videoUrl ? (
+            <ElementMedia videoUrl={videoUrl} altText={t("common.welcome_video")} />
+          ) : null}
 
-        <Headline
-          headline={replaceRecallInfo(
-            getLocalizedValue(headline, languageCode),
-            responseData,
-            variablesData,
-            languageCode
-          )}
-          elementId="welcomeCard"
-        />
-        <Subheader
-          subheader={replaceRecallInfo(
-            getLocalizedValue(subheader, languageCode),
-            responseData,
-            variablesData,
-            languageCode
-          )}
-          elementId="welcomeCard"
-        />
-        <div className="mt-4 flex gap-4 pt-4">
+          <Headline
+            headline={replaceRecallInfo(
+              getLocalizedValue(headline, languageCode),
+              responseData,
+              variablesData,
+              languageCode
+            )}
+            elementId="welcomeCard"
+          />
+          <Subheader
+            subheader={replaceRecallInfo(
+              getLocalizedValue(subheader, languageCode),
+              responseData,
+              variablesData,
+              languageCode
+            )}
+            elementId="welcomeCard"
+          />
+        </div>
+        {/* Same hook as the block action row: Project Redesign pins it to the bottom on mobile */}
+        <div data-fb-block-actions className="mt-4 flex gap-4 pt-4">
           <SubmitButton
             buttonLabel={getLocalizedValue(buttonLabel, languageCode)}
             isLastQuestion={false}
@@ -186,39 +193,41 @@ export function WelcomeCard({
             }}
           />
         </div>
-        {timeToFinish && !showResponseCount ? (
-          <div
-            className="text-subheading my-4 flex items-center space-x-1"
-            data-testid="fb__surveys__welcome-card__time-display">
-            <TimerIcon />
-            <p className="pt-1 text-xs">
-              <span>{calculateTimeToComplete()} </span>
-            </p>
-          </div>
-        ) : null}
-        {showResponseCount && !timeToFinish && responseCount && responseCount > 3 ? (
-          <div className="text-subheading my-4 flex items-center space-x-1">
-            <UsersIcon />
-            <p className="pt-1 text-xs">
-              <span data-testid="fb__surveys__welcome-card__response-count">
-                {t("common.people_responded", { count: responseCount })}
-              </span>
-            </p>
-          </div>
-        ) : null}
-        {timeToFinish && showResponseCount ? (
-          <div className="text-subheading my-4 flex items-center space-x-1">
-            <TimerIcon />
-            <p className="pt-1 text-xs" data-testid="fb__surveys__welcome-card__info-text-test">
-              <span>{calculateTimeToComplete()} </span>
-              <span data-testid="fb__surveys__welcome-card__response-count">
-                {responseCount && responseCount > 3
-                  ? `⋅ ${t("common.people_responded", { count: responseCount })}`
-                  : ""}
-              </span>
-            </p>
-          </div>
-        ) : null}
+        <div data-fb-welcome-info>
+          {timeToFinish && !showResponseCount ? (
+            <div
+              className="text-subheading my-4 flex items-center space-x-1"
+              data-testid="fb__surveys__welcome-card__time-display">
+              <TimerIcon />
+              <p className="pt-1 text-xs">
+                <span>{calculateTimeToComplete()} </span>
+              </p>
+            </div>
+          ) : null}
+          {showResponseCount && !timeToFinish && responseCount && responseCount > 3 ? (
+            <div className="text-subheading my-4 flex items-center space-x-1">
+              <UsersIcon />
+              <p className="pt-1 text-xs">
+                <span data-testid="fb__surveys__welcome-card__response-count">
+                  {t("common.people_responded", { count: responseCount })}
+                </span>
+              </p>
+            </div>
+          ) : null}
+          {timeToFinish && showResponseCount ? (
+            <div className="text-subheading my-4 flex items-center space-x-1">
+              <TimerIcon />
+              <p className="pt-1 text-xs" data-testid="fb__surveys__welcome-card__info-text-test">
+                <span>{calculateTimeToComplete()} </span>
+                <span data-testid="fb__surveys__welcome-card__response-count">
+                  {responseCount && responseCount > 3
+                    ? `⋅ ${t("common.people_responded", { count: responseCount })}`
+                    : ""}
+                </span>
+              </p>
+            </div>
+          ) : null}
+        </div>
       </div>
     </ScrollableContainer>
   );

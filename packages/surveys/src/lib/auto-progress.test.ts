@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { type TSurveyElement, TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import {
+  getAutoProgressDelayMs,
   getAutoProgressElement,
   shouldHideSubmitButtonForAutoProgress,
   shouldTriggerAutoProgress,
@@ -77,5 +78,49 @@ describe("auto-progress helpers", () => {
         isAlreadyInFlight: true,
       })
     ).toBe(false);
+  });
+  describe("single choice", () => {
+    const singleChoice = {
+      id: "sc_1",
+      type: TSurveyElementTypeEnum.MultipleChoiceSingle,
+      required: true,
+      choices: [
+        { id: "c1", label: { default: "2–5" } },
+        { id: "c2", label: { default: "Yes", de: "Ja" } },
+        { id: "other", label: { default: "Other" } },
+      ],
+    } as unknown as TSurveyElement;
+    const trigger = (v: unknown) =>
+      shouldTriggerAutoProgress({
+        changedElementId: "sc_1",
+        mergedValue: { sc_1: v } as never,
+        autoProgressElement: singleChoice,
+        isAlreadyInFlight: false,
+      });
+
+    test("is an auto-progress element only when enabled", () => {
+      expect(getAutoProgressElement([singleChoice], true)).toEqual(singleChoice);
+      expect(getAutoProgressElement([singleChoice], false)).toBeNull();
+    });
+
+    test("triggers for a choice label (any language) or id, not for other", () => {
+      expect(trigger("2–5")).toBe(true);
+      expect(trigger("Ja")).toBe(true);
+      expect(trigger("c1")).toBe(true);
+      expect(trigger("")).toBe(false);
+      expect(trigger("mein eigener Text")).toBe(false);
+      expect(trigger("other")).toBe(false);
+      expect(trigger(undefined)).toBe(false);
+    });
+
+    test("never hides the submit button", () => {
+      expect(shouldHideSubmitButtonForAutoProgress([singleChoice], true, {})).toBe(false);
+    });
+
+    test("delay is 300ms for single choice and 0 otherwise", () => {
+      const rating = createElement("r", TSurveyElementTypeEnum.Rating, true);
+      expect(getAutoProgressDelayMs(singleChoice)).toBe(300);
+      expect(getAutoProgressDelayMs(rating)).toBe(0);
+    });
   });
 });

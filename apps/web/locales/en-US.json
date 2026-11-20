@@ -1367,6 +1367,8 @@
         "assign": "Assign =",
         "audience": "Audience",
         "auto_close_on_inactivity": "Auto close on inactivity",
+        "auto_progress_rating_and_nps": "Auto-progress single choice, rating and NPS",
+        "auto_progress_rating_and_nps_description": "Automatically continue to the next question after a single choice, rating or NPS answer.",
         "auto_save_disabled": "Auto-save disabled",
         "auto_save_disabled_tooltip": "Your survey is only auto-saved when in draft. This assures public surveys are not unintentionally updated.",
         "auto_save_on": "Auto-save on",

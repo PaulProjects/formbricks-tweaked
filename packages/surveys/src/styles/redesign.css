@@ -96,6 +96,57 @@
   border-color: var(--fb-survey-brand-color);
 }
 
+/* Letter badges (A, B, C ...) on list options. The letter is decorative: `/ ""` keeps it out of the a11y tree. */
+#fbjs .fb-redesign [data-slot="radio-group"],
+#fbjs .fb-redesign fieldset {
+  counter-reset: fb-choice;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) {
+  counter-increment: fb-choice;
+  position: relative;
+  padding-inline-start: 30px;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"])::before {
+  content: counter(fb-choice, upper-alpha) / "";
+  position: absolute;
+  inset-inline-start: 12px;
+  top: 9px;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]).border-brand::before {
+  background: var(--fb-survey-brand-color);
+  border-color: var(--fb-survey-brand-color);
+  color: #fff;
+}
+
+/* Visually hidden but still focusable; the label shows the focus ring via focus-within */
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) [data-fb-choice-indicator] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]):focus-within {
+  outline: 2px solid var(--fb-survey-brand-color);
+  outline-offset: 2px;
+}
+
 /* Action row: inline on desktop */
 #fbjs .fb-redesign [data-fb-block-actions] {
   position: static;
@@ -159,11 +210,6 @@
   #fbjs .fb-redesign [data-fb-block-actions] > div {
     flex: 1;
     min-width: 0;
-  }
-
-  /* Back keeps its natural width (the flex:1 above would stretch it) */
-  #fbjs .fb-redesign [data-fb-block-actions] > div:has(> button:not([type="submit"])) {
-    flex: 0 0 auto;
   }
 
   #fbjs .fb-redesign [data-fb-block-actions] button:not([type="submit"]) {

@@ -13,6 +13,7 @@ import { TSurveyStyling, TSurveyType } from "@formbricks/types/surveys/types";
 import { previewSurvey } from "@/app/lib/templates";
 import {
   COLOR_DEFAULTS,
+  LEGACY_CARD_ARRANGEMENT,
   STYLE_DEFAULTS,
   deriveNewFieldsFromLegacy,
   getSuggestedColors,
@@ -70,7 +71,12 @@ export const ThemeStyling = ({
   const legacyFills = deriveNewFieldsFromLegacy(cleanSaved);
 
   const form = useForm<TProjectStyling>({
-    defaultValues: { ...STYLE_DEFAULTS, ...legacyFills, ...cleanSaved },
+    defaultValues: {
+      ...STYLE_DEFAULTS,
+      cardArrangement: LEGACY_CARD_ARRANGEMENT,
+      ...legacyFills,
+      ...cleanSaved,
+    },
     resolver: zodResolver(ZProjectStyling),
   });
 

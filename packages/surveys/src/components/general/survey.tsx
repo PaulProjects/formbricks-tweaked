@@ -24,6 +24,7 @@ import { WelcomeCard } from "@/components/general/welcome-card";
 import { AutoCloseWrapper } from "@/components/wrappers/auto-close-wrapper";
 import { StackedCardsContainer } from "@/components/wrappers/stacked-cards-container";
 import { ApiClient } from "@/lib/api-client";
+import { resolveCardArrangement } from "@/lib/card-arrangement";
 import { evaluateLogic, performActions } from "@/lib/logic";
 import {
   type SerializedSurveyState,
@@ -281,12 +282,8 @@ export function Survey({
     onOfflineStatusChange?.({ isOnline, isSyncing, pendingSyncCount });
   }, [isOnline, isSyncing, pendingSyncCount, onOfflineStatusChange]);
 
-  const cardArrangement = useMemo(() => {
-    if (localSurvey.type === "link") {
-      return styling.cardArrangement?.linkSurveys ?? "straight";
-    }
-    return styling.cardArrangement?.appSurveys ?? "straight";
-  }, [localSurvey.type, styling.cardArrangement?.linkSurveys, styling.cardArrangement?.appSurveys]);
+  const cardArrangement = resolveCardArrangement(localSurvey.type, styling.cardArrangement);
+  const isFullSize = fullSizeCards || cardArrangement === "redesign";
 
   // Current block tracking (replaces currentQuestionIndex)
   const currentBlockIndex = localSurvey.blocks.findIndex((b) => b.id === blockId);
@@ -1106,7 +1103,7 @@ export function Survey({
             responseData={responseData}
             variablesData={currentVariables}
             isPreviewMode={isPreviewMode}
-            fullSizeCards={fullSizeCards}
+            fullSizeCards={isFullSize}
           />
         );
       } else if (blockIdx >= localSurvey.blocks.length) {
@@ -1127,7 +1124,7 @@ export function Survey({
               variablesData={currentVariables}
               onOpenExternalURL={onOpenExternalURL}
               isPreviewMode={isPreviewMode}
-              fullSizeCards={fullSizeCards}
+              fullSizeCards={isFullSize}
               isOfflineWithPending={offlinePersistEnabled && !isOnline && isSurveyFinished}
             />
           );
@@ -1161,9 +1158,10 @@ export function Survey({
               autoFocusEnabled={autoFocusEnabled}
               isBackButtonHidden={localSurvey.isBackButtonHidden}
               isAutoProgressingEnabled={Boolean(localSurvey.isAutoProgressingEnabled)}
+              isChoiceShortcutsEnabled={cardArrangement === "redesign" && offset === 0}
               onOpenExternalURL={onOpenExternalURL}
               dir={dir}
-              fullSizeCards={fullSizeCards}
+              fullSizeCards={isFullSize}
             />
           )
         );
@@ -1222,10 +1220,7 @@ export function Survey({
             </div>
             <div
               ref={contentRef}
-              className={cn(
-                loadingElement ? "animate-pulse opacity-60" : "",
-                fullSizeCards ? "" : "my-auto"
-              )}>
+              className={cn(loadingElement ? "animate-pulse opacity-60" : "", isFullSize ? "" : "my-auto")}>
               {content()}
             </div>
 
@@ -1252,7 +1247,7 @@ export function Survey({
       styling={styling}
       setBlockId={setBlockId}
       shouldResetBlockId={shouldResetQuestionId}
-      fullSizeCards={fullSizeCards}
+      fullSizeCards={isFullSize}
       placement={placement}
     />
   );

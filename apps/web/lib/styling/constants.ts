@@ -81,6 +81,12 @@ export const getSuggestedColors = (brandColor: string = DEFAULT_BRAND_COLOR) => 
 // Pre-compute colors derived from the default brand color.
 const _colors = getSuggestedColors(DEFAULT_BRAND_COLOR);
 
+/** Pre-redesign default: stylings saved without a cardArrangement keep this, so saving the form doesn't switch them. */
+export const LEGACY_CARD_ARRANGEMENT: TProjectStyling["cardArrangement"] = {
+  linkSurveys: "simple",
+  appSurveys: "simple",
+};
+
 /**
  * Single source of truth for every styling default.
  *
@@ -103,7 +109,7 @@ export const STYLE_DEFAULTS: TProjectStyling = {
   highlightBorderColor: { light: _colors["highlightBorderColor.light"] },
   isDarkModeEnabled: false,
   roundness: 8,
-  cardArrangement: { linkSurveys: "simple", appSurveys: "simple" },
+  cardArrangement: { linkSurveys: "redesign", appSurveys: "simple" },
 
   // Headlines & Descriptions
   elementHeadlineColor: { light: _colors["elementHeadlineColor.light"] },

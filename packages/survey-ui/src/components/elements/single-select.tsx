@@ -297,12 +297,14 @@ function SingleSelect({
 
                   return (
                     <label
+                      data-fb-choice-option
                       key={option.id}
                       dir={dir}
                       htmlFor={optionId}
                       className={cn(getOptionContainerClassName(isSelected), isSelected && "z-10")}>
                       <span className="flex items-center">
                         <RadioGroupItem
+                          data-fb-choice-indicator
                           value={option.id}
                           id={optionId}
                           disabled={disabled}
@@ -319,11 +321,13 @@ function SingleSelect({
                 })}
               {hasOtherOption && otherOptionId ? (
                 <label
+                  data-fb-choice-option
                   htmlFor={`${inputId}-${otherOptionId}`}
                   dir={dir}
                   className={cn(getOptionContainerClassName(isOtherSelected), isOtherSelected && "z-10")}>
                   <span className="flex items-center">
                     <RadioGroupItem
+                      data-fb-choice-indicator
                       value={otherOptionId}
                       id={`${inputId}-${otherOptionId}`}
                       disabled={disabled}
@@ -355,12 +359,14 @@ function SingleSelect({
 
                   return (
                     <label
+                      data-fb-choice-option
                       key={option.id}
                       htmlFor={optionId}
                       dir={dir}
                       className={cn(getOptionContainerClassName(isSelected), isSelected && "z-10")}>
                       <span className="flex items-center">
                         <RadioGroupItem
+                          data-fb-choice-indicator
                           value={option.id}
                           id={optionId}
                           disabled={disabled}

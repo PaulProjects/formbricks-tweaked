@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { type TJsFileUploadParams } from "@formbricks/types/js";
 import { type TResponseData, type TResponseTtc } from "@formbricks/types/responses";
 import { type TUploadFileConfig } from "@formbricks/types/storage";
@@ -12,10 +12,12 @@ import { SubmitButton } from "@/components/buttons/submit-button";
 import { ElementConditional } from "@/components/general/element-conditional";
 import { ScrollableContainer } from "@/components/wrappers/scrollable-container";
 import {
+  getAutoProgressDelayMs,
   getAutoProgressElement,
   shouldHideSubmitButtonForAutoProgress,
   shouldTriggerAutoProgress,
 } from "@/lib/auto-progress";
+import { getChoiceIndexFromKey, isTypingTarget } from "@/lib/choice-shortcuts";
 import { getLocalizedValue } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getFirstErrorMessage, validateBlockResponses } from "@/lib/validation/evaluator";
@@ -38,6 +40,7 @@ interface BlockConditionalProps {
   autoFocusEnabled: boolean;
   isBackButtonHidden: boolean;
   isAutoProgressingEnabled: boolean;
+  isChoiceShortcutsEnabled: boolean;
   onOpenExternalURL?: (url: string) => void | Promise<void>;
   dir?: "ltr" | "rtl" | "auto";
   fullSizeCards: boolean;
@@ -62,6 +65,7 @@ export function BlockConditional({
   autoFocusEnabled,
   isBackButtonHidden,
   isAutoProgressingEnabled,
+  isChoiceShortcutsEnabled,
   onOpenExternalURL,
   dir,
   fullSizeCards,
@@ -79,12 +83,46 @@ export function BlockConditional({
   // Ref to collect TTC values synchronously (state updates are async)
   const ttcCollectorRef = useRef<TResponseTtc>({});
   const autoProgressingInFlightRef = useRef(false);
+  const autoProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestAutoProgressValueRef = useRef<TResponseData>({});
   const autoProgressElement = getAutoProgressElement(block.elements, isAutoProgressingEnabled);
   const shouldHideSubmitButton = shouldHideSubmitButtonForAutoProgress(
     block.elements,
     isAutoProgressingEnabled,
     value
   );
+
+  const cancelAutoProgress = () => {
+    if (autoProgressTimeoutRef.current) clearTimeout(autoProgressTimeoutRef.current);
+    autoProgressTimeoutRef.current = null;
+    autoProgressingInFlightRef.current = false;
+  };
+
+  // Don't submit a block the respondent has already left.
+  useEffect(() => cancelAutoProgress, []);
+
+  // Letter shortcuts (A, B, C…) click the matching option of a block's choice question.
+  // Layout effect: a plain effect is attached a frame after the step mounts, so early key presses were lost.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasChoiceElement =
+    block.elements.length === 1 &&
+    (block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceSingle ||
+      block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceMulti);
+
+  useLayoutEffect(() => {
+    if (!isChoiceShortcutsEnabled || !hasChoiceElement) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || isTypingTarget(event.target)) return;
+      const options = containerRef.current?.querySelectorAll<HTMLElement>("[data-fb-choice-option]");
+      if (!options) return;
+      const index = getChoiceIndexFromKey(event, options.length);
+      if (index === null) return;
+      event.preventDefault();
+      options[index].click();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isChoiceShortcutsEnabled, hasChoiceElement]);
 
   const handleElementChange = (elementId: string, responseData: TResponseData) => {
     // If user moved to a different element, we should track it
@@ -105,22 +143,34 @@ export function BlockConditional({
     // Merge with existing block data to preserve other element values
     onChange(mergedValue);
 
+    const eligibilityParams = { changedElementId: elementId, mergedValue, autoProgressElement };
+
+    if (autoProgressingInFlightRef.current) {
+      if (elementId !== autoProgressElement?.id) return;
+      if (shouldTriggerAutoProgress({ ...eligibilityParams, isAlreadyInFlight: false })) {
+        // Respondent changed their mind within the delay: submit the latest choice.
+        latestAutoProgressValueRef.current = mergedValue;
+      } else {
+        // e.g. switched to "Other": cancel and let them type.
+        cancelAutoProgress();
+      }
+      return;
+    }
+
     if (
-      shouldTriggerAutoProgress({
-        changedElementId: elementId,
-        mergedValue,
-        autoProgressElement,
-        isAlreadyInFlight: autoProgressingInFlightRef.current,
-      })
+      shouldTriggerAutoProgress({ ...eligibilityParams, isAlreadyInFlight: false }) &&
+      autoProgressElement
     ) {
       autoProgressingInFlightRef.current = true;
+      latestAutoProgressValueRef.current = mergedValue;
       // Defer submission so element-level change handlers can finalize TTC updates first.
-      setTimeout(() => {
+      autoProgressTimeoutRef.current = setTimeout(() => {
         const blockTtc = collectTtcValues();
         // Only this block's answers, like the regular submit path (previously re-sent the whole response)
-        onSubmit(collectBlockResponses(mergedValue), blockTtc);
+        onSubmit(collectBlockResponses(latestAutoProgressValueRef.current), blockTtc);
         autoProgressingInFlightRef.current = false;
-      }, 0);
+        autoProgressTimeoutRef.current = null;
+      }, getAutoProgressDelayMs(autoProgressElement));
     }
   };
 
@@ -335,11 +385,14 @@ export function BlockConditional({
     // Collect TTC and responses, then submit
     const blockTtc = collectTtcValues();
     const blockResponses = collectBlockResponses();
+    // A manual Next replaces a pending auto-advance, so the block is submitted only once.
+    // Cancelled only here: if validation fails (stale value) the pending auto-advance still runs.
+    cancelAutoProgress();
     onSubmit(blockResponses, blockTtc);
   };
 
   return (
-    <div className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
+    <div ref={containerRef} className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
       {/* Scrollable container for the entire block */}
       <ScrollableContainer fullSizeCards={fullSizeCards}>
         <div className="space-y-6">
@@ -378,6 +431,7 @@ export function BlockConditional({
           </div>
 
           <div
+            data-fb-block-actions
             className={cn(
               "flex w-full flex-row-reverse justify-between",
               fullSizeCards ? "bg-survey-bg sticky bottom-0" : ""
@@ -402,7 +456,10 @@ export function BlockConditional({
                 backButtonLabel={
                   block.backButtonLabel ? getLocalizedValue(block.backButtonLabel, languageCode) : undefined
                 }
-                onClick={onBack}
+                onClick={() => {
+                  cancelAutoProgress();
+                  onBack();
+                }}
                 tabIndex={0}
               />
             )}

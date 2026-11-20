@@ -11,6 +11,7 @@ import { TProjectStyling } from "@formbricks/types/project";
 import { TSurvey, TSurveyStyling } from "@formbricks/types/surveys/types";
 import {
   COLOR_DEFAULTS,
+  LEGACY_CARD_ARRANGEMENT,
   STYLE_DEFAULTS,
   deriveNewFieldsFromLegacy,
   getSuggestedColors,
@@ -79,6 +80,7 @@ export const StylingView = ({
   const form = useForm<TSurveyStyling>({
     defaultValues: {
       ...STYLE_DEFAULTS,
+      cardArrangement: LEGACY_CARD_ARRANGEMENT,
       ...projectLegacyFills,
       ...cleanProject,
       ...surveyLegacyFills,

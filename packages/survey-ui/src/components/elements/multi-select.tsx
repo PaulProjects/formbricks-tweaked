@@ -346,11 +346,13 @@ function ListVariant({
             const isDisabled = disabled || (isNoneSelected && option.id !== "none");
             return (
               <label
+                data-fb-choice-option
                 key={option.id}
                 htmlFor={optionId}
                 className={cn(getOptionContainerClassName(isChecked, isDisabled), isChecked && "z-10")}>
                 <span className="flex items-center">
                   <Checkbox
+                    data-fb-choice-indicator
                     id={optionId}
                     name={inputId}
                     checked={isChecked}
@@ -372,6 +374,7 @@ function ListVariant({
         {hasOtherOption && otherOptionId ? (
           <div className="space-y-2">
             <label
+              data-fb-choice-option
               htmlFor={`${inputId}-${otherOptionId}`}
               className={cn(
                 getOptionContainerClassName(isOtherSelected, disabled || isNoneSelected),
@@ -379,6 +382,7 @@ function ListVariant({
               )}>
               <span className="flex items-center">
                 <Checkbox
+                  data-fb-choice-indicator
                   id={`${inputId}-${otherOptionId}`}
                   name={inputId}
                   checked={isOtherSelected}
@@ -419,11 +423,13 @@ function ListVariant({
             const isDisabled = disabled || (isNoneSelected && option.id !== "none");
             return (
               <label
+                data-fb-choice-option
                 key={option.id}
                 htmlFor={optionId}
                 className={cn(getOptionContainerClassName(isChecked, isDisabled), isChecked && "z-10")}>
                 <span className="flex items-center">
                   <Checkbox
+                    data-fb-choice-indicator
                     id={optionId}
                     name={inputId}
                     checked={isChecked}

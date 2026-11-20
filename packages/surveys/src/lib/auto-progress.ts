@@ -2,7 +2,25 @@ import { type TResponseData } from "@formbricks/types/responses";
 import { type TSurveyElement, TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 
 const isAutoProgressElementType = (type: TSurveyElementTypeEnum): boolean =>
+  type === TSurveyElementTypeEnum.Rating ||
+  type === TSurveyElementTypeEnum.NPS ||
+  type === TSurveyElementTypeEnum.MultipleChoiceSingle;
+
+// Single choice keeps "Next" visible so the respondent can always correct or skip the answer.
+const isRatingOrNps = (type: TSurveyElementTypeEnum): boolean =>
   type === TSurveyElementTypeEnum.Rating || type === TSurveyElementTypeEnum.NPS;
+
+export const getAutoProgressDelayMs = (element: TSurveyElement): number =>
+  element.type === TSurveyElementTypeEnum.MultipleChoiceSingle ? 300 : 0;
+
+// Stored value is the choice label (any language) or id; "" / free text means "other".
+const isNonOtherChoiceValue = (element: TSurveyElement, value: unknown): boolean => {
+  if (element.type !== TSurveyElementTypeEnum.MultipleChoiceSingle) return true;
+  if (typeof value !== "string" || value === "") return false;
+  return element.choices.some(
+    (choice) => choice.id !== "other" && (choice.id === value || Object.values(choice.label).includes(value))
+  );
+};
 
 export const getAutoProgressElement = (
   elements: TSurveyElement[],
@@ -23,7 +41,12 @@ export const shouldHideSubmitButtonForAutoProgress = (
 ): boolean => {
   const autoProgressElement = getAutoProgressElement(elements, isAutoProgressingEnabled);
   // Once answered (e.g. after navigating back), keep "Next" visible so the respondent isn't stuck.
-  return Boolean(autoProgressElement?.required && value[autoProgressElement.id] === undefined);
+  return Boolean(
+    autoProgressElement &&
+    isRatingOrNps(autoProgressElement.type) &&
+    autoProgressElement.required &&
+    value[autoProgressElement.id] === undefined
+  );
 };
 
 export const shouldTriggerAutoProgress = ({
@@ -41,5 +64,6 @@ export const shouldTriggerAutoProgress = ({
     return false;
   }
 
-  return mergedValue[autoProgressElement.id] !== undefined;
+  const changedValue = mergedValue[autoProgressElement.id];
+  return changedValue !== undefined && isNonOtherChoiceValue(autoProgressElement, changedValue);
 };

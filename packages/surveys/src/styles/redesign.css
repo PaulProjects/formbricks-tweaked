@@ -1,0 +1,280 @@
+/* Project Redesign layout for link surveys. Geometry only: colors/fonts come from the project theme. */
+#fbjs .fb-redesign {
+  container-type: inline-size;
+  width: 100%;
+  height: 100%;
+  --fb-progress-track-height: 4px;
+  --fb-progress-track-border-radius: 0px;
+  /* Card color, kept for the mobile footer tint before the step makes the card transparent */
+  --fb-redesign-card-color: var(--fb-survey-background-color);
+}
+
+/* No card: bg-survey-bg is a layered !important utility, so it is cleared through its variable */
+#fbjs .fb-redesign .fb-redesign-step {
+  --fb-survey-background-color: transparent;
+  height: 100%;
+  animation: fb-redesign-in-forward 320ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+#fbjs .fb-redesign .fb-redesign-step[data-direction="back"] {
+  animation-name: fb-redesign-in-back;
+}
+
+@keyframes fb-redesign-in-forward {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fb-redesign-in-back {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* max-height: the track's h-2 utility is !important */
+#fbjs .fb-redesign .progress-track {
+  max-height: 4px;
+  border-radius: 0;
+}
+
+/* The step fills the renderer height down to exactly one scroll container (ScrollableContainer's
+   [data-fb-scroller]). Tailwind utilities are layered !important, so we size via properties they don't set.
+   The chain needs :has(); without it the scroller keeps its bounded max-height and Next stays reachable. */
+@supports selector(:has(a)) {
+  #fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative > div:has([data-fb-block-actions]) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step .relative:has(> [data-fb-scroller]) {
+    height: 100%;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] {
+    height: 100%;
+    max-height: none !important;
+  }
+
+  @container (max-width: 639px) {
+    #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
+      min-height: 100%;
+    }
+  }
+}
+
+#fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] {
+  overscroll-behavior: contain;
+}
+
+/* A layered !important in `components` beats the `utilities` layer's !important (important layers cascade in
+   reverse order). Used only where a utility must lose. */
+@layer components {
+  /* Fade + scroll-to-bottom button: the sticky action row makes them unnecessary, and the button sat over Next */
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] ~ * {
+    display: none !important;
+  }
+
+  /* fullSizeCards adds `sticky bottom-0` to the action row; on desktop it is inline */
+  @container (min-width: 640px) {
+    #fbjs .fb-redesign [data-fb-block-actions] {
+      position: static !important;
+    }
+  }
+}
+
+/* The scroller keeps its px-4 (16px), so 16px + 32px = 48px page margin */
+#fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
+  box-sizing: content-box;
+  max-width: 720px;
+  margin-inline: auto;
+  padding: 48px 32px 0;
+}
+
+/* Headline */
+#fbjs .fb-redesign [data-slot="label"][data-variant="headline"] {
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+#fbjs .fb-redesign [data-element-input] {
+  margin-top: 32px;
+}
+
+/* Options (survey-ui option containers carry .rounded-option; selected ones .border-brand) */
+#fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]) {
+  --fb-option-padding-x: 12px;
+  --fb-option-padding-y: 8px;
+  --fb-option-border-radius: 22px;
+  justify-content: center;
+  min-height: 44px;
+  gap: 8px;
+  width: fit-content;
+  min-width: 16rem;
+  max-width: 100%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]).border-brand {
+  border-width: 2px;
+  border-color: var(--fb-survey-brand-color);
+}
+
+/* Letter badges (A, B, C ...) on list options. The letter is decorative: `/ ""` keeps it out of the a11y tree. */
+#fbjs .fb-redesign [data-slot="radio-group"],
+#fbjs .fb-redesign fieldset {
+  counter-reset: fb-choice;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) {
+  counter-increment: fb-choice;
+}
+
+/* Badge is a flex item before the label text: 12px padding + 22px badge + 8px gap (text's 12px margin - 4px) */
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) > span:first-child::before {
+  content: counter(fb-choice, upper-alpha);
+  content: counter(fb-choice, upper-alpha) / "";
+  flex: none;
+  margin-inline-end: -4px;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+
+#fbjs
+  .fb-redesign
+  label[data-fb-choice-option]:not([class*="aspect-"]).border-brand
+  > span:first-child::before {
+  background: var(--fb-survey-brand-color);
+  border-color: var(--fb-survey-brand-color);
+  color: #fff;
+}
+
+/* Visually hidden but still focusable; the label shows the focus ring via focus-within */
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) [data-fb-choice-indicator] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]):focus-within {
+  outline: 2px solid var(--fb-survey-brand-color);
+  outline-offset: 2px;
+}
+
+/* Action row: inline on desktop */
+#fbjs .fb-redesign [data-fb-block-actions] {
+  gap: 12px;
+  margin-top: 32px;
+  padding-bottom: 24px;
+}
+
+/* Row is flex-row-reverse + justify-between (!important utilities): an auto margin keeps Next at the start */
+#fbjs .fb-redesign [data-fb-block-actions] > div {
+  margin-inline-end: auto;
+}
+
+#fbjs .fb-redesign [data-fb-block-actions] button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The submit button sizes itself from these vars via inline style */
+#fbjs .fb-redesign [data-fb-block-actions] .button-custom {
+  --fb-button-height: 44px;
+  --fb-button-border-radius: 22px;
+}
+
+@container (max-width: 639px) {
+  /* Full-height column so the action row sits at the bottom; -16px cancels the scroller's px-4 */
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    margin-inline: -16px;
+    padding: 24px 0 0;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div > div:first-child {
+    padding-inline: 24px;
+  }
+
+  #fbjs .fb-redesign [data-slot="label"][data-variant="headline"] {
+    font-size: 20px;
+  }
+
+  #fbjs .fb-redesign [data-element-input] {
+    margin-top: 24px;
+  }
+
+  #fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #fbjs .fb-redesign input,
+  #fbjs .fb-redesign textarea {
+    font-size: 16px;
+  }
+
+  #fbjs .fb-redesign [data-fb-block-actions] {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding: 16px 24px max(16px, env(safe-area-inset-bottom));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    --fb-survey-background-color: color-mix(in srgb, var(--fb-redesign-card-color) 70%, transparent);
+  }
+
+  #fbjs .fb-redesign [data-fb-block-actions] > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  #fbjs .fb-redesign [data-fb-block-actions] button:not([type="submit"]) {
+    height: 48px;
+    white-space: nowrap;
+  }
+
+  #fbjs .fb-redesign [data-fb-block-actions] .button-custom {
+    --fb-button-height: 48px;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #fbjs .fb-redesign .fb-redesign-step {
+    animation: none;
+  }
+}

@@ -53,6 +53,7 @@ const nextConfig = {
     // Next 16.3 defaults to the tsc CLI, which type-checks test files too; keep the 16.2 behavior of
     // excluding *.test.* and __mocks__ from the build check (tests are checked by vitest, not tsc).
     useTypeScriptCli: false,
+    agentUpgrade: "security",
   },
   transpilePackages: ["@formbricks/database"],
   images: {

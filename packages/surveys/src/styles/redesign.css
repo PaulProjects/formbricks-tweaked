@@ -48,32 +48,60 @@
   border-radius: 0;
 }
 
-/* The step fills the renderer height down to exactly one scroll container (ScrollableContainer's inner div).
-   Tailwind utilities are layered !important, so we size via properties they don't set. */
-#fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+/* The step fills the renderer height down to exactly one scroll container (ScrollableContainer's
+   [data-fb-scroller]). Tailwind utilities are layered !important, so we size via properties they don't set.
+   The chain needs :has(); without it the scroller keeps its bounded max-height and Next stays reachable. */
+@supports selector(:has(a)) {
+  #fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative > div:has([data-fb-block-actions]) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step .relative:has(> [data-fb-scroller]) {
+    height: 100%;
+  }
+
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] {
+    height: 100%;
+    max-height: none !important;
+  }
+
+  @container (max-width: 639px) {
+    #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
+      min-height: 100%;
+    }
+  }
 }
 
-#fbjs .fb-redesign .fb-redesign-step .no-scrollbar > .relative > div:has([data-fb-block-actions]) {
-  flex: 1;
-  min-height: 0;
-}
-
-#fbjs .fb-redesign .fb-redesign-step .relative:has(> .overflow-auto) {
-  height: 100%;
-}
-
-#fbjs .fb-redesign .fb-redesign-step .overflow-auto {
-  height: 100%;
-  max-height: none !important;
+#fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] {
   overscroll-behavior: contain;
 }
 
+/* A layered !important in `components` beats the `utilities` layer's !important (important layers cascade in
+   reverse order). Used only where a utility must lose. */
+@layer components {
+  /* Fade + scroll-to-bottom button: the sticky action row makes them unnecessary, and the button sat over Next */
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] ~ * {
+    display: none !important;
+  }
+
+  /* fullSizeCards adds `sticky bottom-0` to the action row; on desktop it is inline */
+  @container (min-width: 640px) {
+    #fbjs .fb-redesign [data-fb-block-actions] {
+      position: static !important;
+    }
+  }
+}
+
 /* The scroller keeps its px-4 (16px), so 16px + 32px = 48px page margin */
-#fbjs .fb-redesign .fb-redesign-step .overflow-auto > div {
+#fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
   box-sizing: content-box;
   max-width: 720px;
   margin-inline: auto;
@@ -123,6 +151,7 @@
 
 /* Badge is a flex item before the label text: 12px padding + 22px badge + 8px gap (text's 12px margin - 4px) */
 #fbjs .fb-redesign label[data-fb-choice-option]:not([class*="aspect-"]) > span:first-child::before {
+  content: counter(fb-choice, upper-alpha);
   content: counter(fb-choice, upper-alpha) / "";
   flex: none;
   margin-inline-end: -4px;
@@ -165,7 +194,6 @@
 
 /* Action row: inline on desktop */
 #fbjs .fb-redesign [data-fb-block-actions] {
-  position: static;
   gap: 12px;
   margin-top: 32px;
   padding-bottom: 24px;
@@ -189,16 +217,15 @@
 
 @container (max-width: 639px) {
   /* Full-height column so the action row sits at the bottom; -16px cancels the scroller's px-4 */
-  #fbjs .fb-redesign .fb-redesign-step .overflow-auto > div {
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    min-height: 100%;
     margin-inline: -16px;
     padding: 24px 0 0;
   }
 
-  #fbjs .fb-redesign .fb-redesign-step .overflow-auto > div > div:first-child {
+  #fbjs .fb-redesign .fb-redesign-step [data-fb-scroller] > div > div:first-child {
     padding-inline: 24px;
   }
 

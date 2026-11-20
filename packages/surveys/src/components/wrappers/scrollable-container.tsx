@@ -79,6 +79,7 @@ export const ScrollableContainer = forwardRef<ScrollableContainerHandle, Scrolla
         )}
         <div
           ref={containerRef}
+          data-fb-scroller
           style={{
             maxHeight,
           }}

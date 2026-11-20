@@ -165,7 +165,12 @@ export function StackedCardsContainer({
       <div style={{ height: cardHeight }} />
       {cardArrangement === "redesign" ? (
         <div className="fb-redesign">
-          <div key={blockIdxTemp} className="fb-redesign-step" data-direction={direction}>
+          <div
+            key={blockIdxTemp}
+            id={`questionCard-${blockIdxTemp.toString()}`}
+            data-testid={`questionCard-${blockIdxTemp.toString()}`}
+            className="fb-redesign-step"
+            data-direction={direction}>
             {getCardContent(blockIdxTemp, 0)}
           </div>
         </div>

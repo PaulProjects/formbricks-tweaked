@@ -79,7 +79,7 @@
 }
 
 /* Options (survey-ui option containers carry .rounded-option; selected ones .border-brand) */
-#fbjs .fb-redesign label.rounded-option {
+#fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]) {
   min-height: 44px;
   border-radius: 22px;
   padding: 8px 12px;
@@ -91,15 +91,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-#fbjs .fb-redesign label.rounded-option.border-brand {
+#fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]).border-brand {
   border-width: 2px;
   border-color: var(--fb-survey-brand-color);
 }
 
 /* Action row: inline on desktop */
 #fbjs .fb-redesign [data-fb-block-actions] {
-  position: sticky;
-  bottom: 0;
+  position: static;
   margin-top: 32px;
   padding-bottom: 24px;
 }
@@ -136,7 +135,7 @@
     margin-top: 24px;
   }
 
-  #fbjs .fb-redesign label.rounded-option {
+  #fbjs .fb-redesign label.rounded-option:not([class*="aspect-"]) {
     width: 100%;
     min-width: 0;
   }
@@ -147,6 +146,9 @@
   }
 
   #fbjs .fb-redesign [data-fb-block-actions] {
+    position: sticky;
+    bottom: 0;
+    gap: 12px;
     margin-top: 0;
     padding: 16px 24px max(16px, env(safe-area-inset-bottom));
     backdrop-filter: blur(16px);
@@ -154,8 +156,19 @@
     background: color-mix(in srgb, var(--fb-survey-background-color) 70%, transparent);
   }
 
-  #fbjs .fb-redesign [data-fb-block-actions] > div:not([aria-hidden]) {
+  #fbjs .fb-redesign [data-fb-block-actions] > div {
     flex: 1;
+    min-width: 0;
+  }
+
+  /* Back keeps its natural width (the flex:1 above would stretch it) */
+  #fbjs .fb-redesign [data-fb-block-actions] > div:has(> button:not([type="submit"])) {
+    flex: 0 0 auto;
+  }
+
+  #fbjs .fb-redesign [data-fb-block-actions] button:not([type="submit"]) {
+    height: 48px;
+    white-space: nowrap;
   }
 
   #fbjs .fb-redesign [data-fb-block-actions] button[type="submit"],

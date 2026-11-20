@@ -1153,6 +1153,7 @@ export function Survey({
               autoFocusEnabled={autoFocusEnabled}
               isBackButtonHidden={localSurvey.isBackButtonHidden}
               isAutoProgressingEnabled={Boolean(localSurvey.isAutoProgressingEnabled)}
+              isChoiceShortcutsEnabled={cardArrangement === "redesign" && offset === 0}
               onOpenExternalURL={onOpenExternalURL}
               dir={dir}
               fullSizeCards={isFullSize}

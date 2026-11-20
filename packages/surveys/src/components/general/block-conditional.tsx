@@ -17,6 +17,7 @@ import {
   shouldHideSubmitButtonForAutoProgress,
   shouldTriggerAutoProgress,
 } from "@/lib/auto-progress";
+import { getChoiceIndexFromKey, isTypingTarget } from "@/lib/choice-shortcuts";
 import { getLocalizedValue } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getFirstErrorMessage, validateBlockResponses } from "@/lib/validation/evaluator";
@@ -39,6 +40,7 @@ interface BlockConditionalProps {
   autoFocusEnabled: boolean;
   isBackButtonHidden: boolean;
   isAutoProgressingEnabled: boolean;
+  isChoiceShortcutsEnabled: boolean;
   onOpenExternalURL?: (url: string) => void | Promise<void>;
   dir?: "ltr" | "rtl" | "auto";
   fullSizeCards: boolean;
@@ -63,6 +65,7 @@ export function BlockConditional({
   autoFocusEnabled,
   isBackButtonHidden,
   isAutoProgressingEnabled,
+  isChoiceShortcutsEnabled,
   onOpenExternalURL,
   dir,
   fullSizeCards,
@@ -97,6 +100,28 @@ export function BlockConditional({
 
   // Don't submit a block the respondent has already left.
   useEffect(() => cancelAutoProgress, []);
+
+  // Letter shortcuts (A, B, C…) click the matching option of a block's single choice question.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasSingleChoiceElement =
+    block.elements.length === 1 &&
+    (block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceSingle ||
+      block.elements[0].type === TSurveyElementTypeEnum.MultipleChoiceMulti);
+
+  useEffect(() => {
+    if (!isChoiceShortcutsEnabled || !hasSingleChoiceElement) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || isTypingTarget(event.target)) return;
+      const options = containerRef.current?.querySelectorAll<HTMLElement>("[data-fb-choice-option]");
+      if (!options) return;
+      const index = getChoiceIndexFromKey(event, options.length);
+      if (index === null) return;
+      event.preventDefault();
+      options[index].click();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isChoiceShortcutsEnabled, hasSingleChoiceElement]);
 
   const handleElementChange = (elementId: string, responseData: TResponseData) => {
     // If user moved to a different element, we should track it
@@ -363,7 +388,7 @@ export function BlockConditional({
   };
 
   return (
-    <div className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
+    <div ref={containerRef} className={cn("space-y-6", fullSizeCards ? "h-full" : "")}>
       {/* Scrollable container for the entire block */}
       <ScrollableContainer fullSizeCards={fullSizeCards}>
         <div className="space-y-6">

@@ -17,7 +17,7 @@ services:
       - 1025:1025
 
   valkey:
-    image: valkey/valkey@sha256:12ba4f45a7c3e1d0f076acd616cb230834e75a77e8516dde382720af32832d6d
+    image: valkey/valkey:8.1.12@sha256:5032c4dd7abe08d6fd9382054608183e2bf1f7e3895ef619b8784698454325f7
     command: "valkey-server"
     ports:
       - 6379:6379
